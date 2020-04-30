@@ -6,8 +6,6 @@ import gzip
 from zipfile import ZipFile
 from multiprocessing.shared_memory import SharedMemory
 import json
-import io
-import sys
 import array
 
 import logging
@@ -26,7 +24,7 @@ class Embedding(object):
     Objects are assumed to be located in the rows.
     """
 
-    def __init__(self, embedding_path, dense_input, words_to_keep=None, max_words=-1):
+    def __init__(self, embedding_path, dense_input, max_words=-1):
         """
         Parameters
         ----------
@@ -40,26 +38,26 @@ class Embedding(object):
             Indicates the number of lines to read in.
             If negative, the entire file gets processed.
         """
+        self._memories = []
         # Shared memory object
-        self.memory = None
+        self.embedding_memory_name = "embedding"
         # Type and shape of the array in shared memory
-        self.dtype = None
-        self.shape = None
+        self.embedding_memory_dtype = None
+        self.embedding_memory_size = None
+        self.embedding_memory_shape = None
 
-        # Shared memory objects (dict is dumped into json string and converted to bytes[utf8])
-        self.i2w_memory = None
+        # Shared memory objects (dict is dumped into as json string and converted to bytes[utf8])
+        self.i2w_memory_name = "i2w"
         self.i2w_memory_size = 0
-        self.w2i_memory = None
+        self.w2i_memory_name = "w2i"
         self.w2i_memory_size = 0
 
         if dense_input:
-            self.w2i, self.i2w = self.load_dense_embeddings(embedding_path, words_to_keep=words_to_keep,
-                                                                    max_words=max_words)
+            self.load_dense_embeddings(embedding_path, max_words=max_words)
         else:
-            self.w2i, self.i2w = self.load_sparse_embeddings(embedding_path, words_to_keep=words_to_keep,
-                                                                     max_words=max_words)
+            self.load_sparse_embeddings(embedding_path, max_words=max_words)
 
-    def load_dense_embeddings(self, path: str, words_to_keep=None, max_words=-1):
+    def load_dense_embeddings(self, path: str, max_words=-1):
         """
         Reads in the dense embedding file.
 
@@ -101,8 +99,6 @@ class Embedding(object):
             if len(words) == 0 and len(tokens) == 2 and re.match('[1-9][0-9]*', tokens[0]):
                 # the first line might contain the number of embeddings and dimensionality of the vectors
                 continue
-            if words_to_keep is not None and not tokens[0] in words_to_keep:
-                continue
             try:
                 values = [float(i) for i in tokens[1:]]
                 if sum([v ** 2 for v in values]) > 0:  # only embeddings with non-zero norm are kept
@@ -111,15 +107,14 @@ class Embedding(object):
             except Exception:
                 print('Error while parsing input line #{}: {}'.format(counter, line))
 
-        # Adding unknown vector
-
         W = np.array(data)
 
-        self.memory = SharedMemory('embedding', create=True, size=W.nbytes)
+        memory = SharedMemory(self.embedding_memory_name, create=True, size=W.nbytes)
 
-        buf = np.ndarray(W.shape, dtype=W.dtype, buffer=self.memory.buf)
-        self.dtype = W.dtype
-        self.shape = W.shape
+        buf = np.ndarray(W.shape, dtype=W.dtype, buffer=memory.buf)
+        self.embedding_memory_dtype = W.dtype
+        self.embedding_memory_shape = W.shape
+        self.embedding_memory_size = W.nbytes
         buf[:, :] = W[:, :]
         del W
 
@@ -131,17 +126,20 @@ class Embedding(object):
         w2i_byte = array.array('B')
         w2i_byte.frombytes(json.dumps(w2i).encode("utf8"))
 
-        self.i2w_memory = SharedMemory("i2w", create=True, size=i2w_byte.__len__())
-        self.i2w_memory.buf[:] = i2w_byte[:]
+        i2w_memory = SharedMemory(self.i2w_memory_name, create=True, size=i2w_byte.__len__())
+        i2w_memory.buf[:] = i2w_byte[:]
         self.i2w_memory_size = i2w_byte.__len__()
 
-        self.w2i_memory = SharedMemory("w2i", create=True, size=w2i_byte.__len__())
-        self.w2i_memory.buf[:] = w2i_byte[:]
+        w2i_memory = SharedMemory(self.w2i_memory_name, create=True, size=w2i_byte.__len__())
+        w2i_memory.buf[:] = w2i_byte[:]
         self.w2i_memory_size = w2i_byte.__len__()
 
-        return w2i, i2w
+        # Adding shareables to list to preserve one view and prevent them them from garbage collection
+        self._memories.append(i2w_memory)
+        self._memories.append(w2i_memory)
+        self._memories.append(memory)
 
-    def load_sparse_embeddings(self, path, words_to_keep=None, max_words=-1):
+    def load_sparse_embeddings(self, path, max_words=-1):
         """
         Reads in the sparse embedding file.
 
@@ -182,10 +180,6 @@ class Embedding(object):
             if line_number == max_words:
                 break
             parts = line.rstrip().split(' ')
-
-            if words_to_keep is not None and parts[0] not in words_to_keep:
-                continue
-
             i2w[len(i2w)] = parts[0]
             for i, value in enumerate(parts[1:]):
                 value = float(value)
@@ -198,11 +192,12 @@ class Embedding(object):
         sparse = sp.csr_matrix((data, indices, indptr), shape=(len(indptr) - 1, i + 1)).toarray()
 
         # Creating shared memory objects
-        self.memory = SharedMemory('embedding', create=True, size=sparse.nbytes)
+        memory = SharedMemory(self.embedding_memory_name, create=True, size=sparse.nbytes)
 
-        buf = np.ndarray(sparse.shape, dtype=sparse.dtype, buffer=self.memory.buf)
-        self.dtype = sparse.dtype
-        self.shape = sparse.shape
+        buf = np.ndarray(sparse.shape, dtype=sparse.dtype, buffer=memory.buf)
+        self.embedding_memory_dtype = sparse.dtype
+        self.embedding_memory_shape = sparse.shape
+        self.embedding_memory_size = sparse.nbytes
         buf[:, :] = sparse[:, :]
         del sparse
 
@@ -211,63 +206,28 @@ class Embedding(object):
         w2i_byte = array.array('B')
         w2i_byte.frombytes(json.dumps(w2i).encode("utf8"))
 
-        self.i2w_memory = SharedMemory("i2w", create=True, size=i2w_byte.__len__())
-        self.i2w_memory.buf[:] = i2w_byte[:]
+        i2w_memory = SharedMemory(self.i2w_memory_name, create=True, size=i2w_byte.__len__())
+        i2w_memory.buf[:] = i2w_byte[:]
+        self.i2w_memory_size = i2w_byte.__len__()
 
-        self.w2i_memory = SharedMemory("w2i", create=True, size=w2i_byte.__len__())
-        self.w2i_memory.buf[:] = w2i_byte[:]
+        w2i_memory = SharedMemory(self.w2i_memory_name, create=True, size=w2i_byte.__len__())
+        w2i_memory.buf[:] = w2i_byte[:]
+        self.w2i_memory_size = w2i_byte.__len__()
 
-        return w2i, i2w
+        # Adding shareables to list to preserve one view and prevent them them from garbage collection
+        self._memories.append(i2w_memory)
+        self._memories.append(w2i_memory)
+        self._memories.append(memory)
 
-    def query_by_index(self, idx, top_words=25000, top_k=10):
-        assert type(self.W) == sp.csr_matrix  # this method only works for sparse matrices at the moment
-        relative_scores = []
-        word_ids = []
-        for wid, we in enumerate(self.W):
-            if wid == top_words:
-                break
-            if idx in we.indices:
-                s = np.sum(we.data)
-                for i, d in zip(we.indices, we.data):
-                    if i == idx:
-                        relative_scores.append(d / s)
-                        word_ids.append(wid)
-                        break
-        order = np.argsort(relative_scores)
-        if top_k > 0: order = order[-top_k:]
-        return [(self.i2w[word_ids[j]], relative_scores[j], word_ids[j]) for j in order]
+    @classmethod
+    def buff_to_dict(cls, shr: SharedMemory, size: int) -> dict:
+        json_string_bytes = array.array('B', shr.buf)[:size]
+        json_string = json_string_bytes.tobytes().decode("utf8")
+        dictionary = json.loads(json_string)
+        return dictionary
 
 
-def _constructing_mcrae_features(mcrae_dir: str):
-    """
-    Creating feature dictionary
-
-    Parameters
-    ----------
-    mcrae_dir: str
-        Path to the McRae file
-
-    Returns
-    -------
-    dict:
-        Concept-Index dictionary
-    """
-    c2i = {}
-
-    # Iterating over the lines of the file
-    for i, l in enumerate(open('{}/McRae-BRM-InPress/CONCS_FEATS_concstats_brm.txt'.format(mcrae_dir))):
-        # Skipping column labels
-        if i == 0:
-            continue
-        # Split it into columns
-        parts = l.split()
-        # Creating Concept-Index pairs
-        if parts[0] not in c2i:
-            c2i[parts[0]] = len(c2i)
-    return c2i
-
-
-def embedding_reader(input_file: str, dense_file: bool, lines_to_read=-1, mcrae_dir=None, mcrae_words_only=None):
+def embedding_reader(input_file: str, dense_file: bool, lines_to_read=-1):
     """
     Reads embedding file
     Parameters
@@ -290,13 +250,6 @@ def embedding_reader(input_file: str, dense_file: bool, lines_to_read=-1, mcrae_
     """
     path_to_embedding = input_file
 
-    c2i = {}
-    if mcrae_dir:
-        c2i = _constructing_mcrae_features(mcrae_dir)
-
-    if mcrae_dir is not None and mcrae_words_only is not None:
-        emb = Embedding(path_to_embedding, dense_file, max_words=lines_to_read, words_to_keep=c2i.keys())
-    else:
-        emb = Embedding(path_to_embedding, dense_file, max_words=lines_to_read, words_to_keep=None)
+    emb = Embedding(path_to_embedding, dense_file, max_words=lines_to_read)
 
     return emb
