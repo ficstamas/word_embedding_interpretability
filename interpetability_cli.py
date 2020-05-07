@@ -1,6 +1,10 @@
 from multiprocessing import freeze_support
 from argparse import ArgumentParser
 from interpretability.core.config import Config
+from models import *
+from interpretability.loader.embedding import Embedding as EmbeddingObject
+from interpretability.loader.semcat import semcat_reader
+
 
 if __name__ == '__main__':
     freeze_support()  # for Windows support
@@ -59,4 +63,11 @@ if __name__ == '__main__':
 
     config.log_config()
 
-    print(config)
+    embedding = EmbeddingObject(config)
+    config.embedding.embedding = embedding
+    semcat = semcat_reader(config)
+    config.semantic_categories.categories = semcat
+
+    model = DefaultModel()
+    model.run()
+    model.save()

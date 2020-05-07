@@ -4,13 +4,15 @@ import numpy as np
 import random
 import math
 from .embedding import Embedding
+from interpretability.core.config import Config
+from multiprocessing.shared_memory import SharedMemory
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%d-%b-%y %H:%M:%S')
 
 
-__all__ = ["SemCat", "semcat_reader"]
+__all__ = ["SemCat"]
 
 
 class SemCat:
@@ -67,119 +69,132 @@ class SemCat:
         return self._dropped_words
 
 
-def semcat_reader(input_dir: str, embedding: Embedding, random=False, seed=None, percent=0, center=False) -> SemCat:
+def random_drop(vocab, embedding: Embedding, percent, vocab_size):
+    weights_mem = SharedMemory(embedding.embedding_memory_name)
+    W = np.ndarray(shape=embedding.embedding_memory_shape, dtype=embedding.embedding_memory_dtype,
+                   buffer=weights_mem.buf)
+
+    w2i_mem = SharedMemory(embedding.w2i_memory_name)
+    w2i = embedding.buff_to_dict(w2i_mem, embedding.w2i_memory_size)
+
+    dropped_words = {}
+    for c in vocab:
+        if c not in dropped_words:
+            dropped_words[c] = []
+
+        existing_words = []
+        for word in vocab[c]:  # iterating over words
+            try:
+                _ = W[w2i[word]]
+                existing_words.append(word)
+            except KeyError:
+                continue
+
+        size = existing_words.__len__()
+        rm_num = math.floor(size * percent)
+        vocab_size -= rm_num
+        for i in range(rm_num):
+            rng = random.randint(0, size - i - 1)
+            dropped_words[c].append(existing_words[rng])
+            del existing_words[rng]
+        vocab[c] = existing_words
+
+    return dropped_words
+
+
+def category_center(vocab, embedding: Embedding, percent, vocab_size):
+    weights_mem = SharedMemory(embedding.embedding_memory_name)
+    W = np.ndarray(shape=embedding.embedding_memory_shape, dtype=embedding.embedding_memory_dtype,
+                   buffer=weights_mem.buf)
+
+    w2i_mem = SharedMemory(embedding.w2i_memory_name)
+    w2i = embedding.buff_to_dict(w2i_mem, embedding.w2i_memory_size)
+
+    dropped_words = {}
+    for c in vocab:  # c is the category
+        if c not in dropped_words:  # populating dropped_words with empty lists
+            dropped_words[c] = []
+        mean = None
+        for word in vocab[c]:  # iterating over words
+            try:
+                # getting coefficients of the words of c
+                if mean is None:
+                    mean = np.array([W[w2i[word]]])
+                else:
+                    vector = [W[w2i[word]]]
+                    mean = np.append(mean, vector, axis=0)
+            except KeyError:
+                continue
+        # getting the category center
+        mean = np.mean(mean)
+        ranks = None
+        # calculating distances from the category centers and sorting by that afterwards
+        for i, word in enumerate(vocab[c]):
+            try:
+                if ranks is None:
+                    ranks = np.array([[i, _distance(mean, W[w2i[word]])]])
+                else:
+                    ranks = np.append(ranks, [[i, _distance(mean, W[w2i[word]])]], axis=0)
+            except KeyError:
+                continue
+        ranks = ranks[ranks[:, 1].argsort(), :]
+        drop = math.floor(ranks.shape[0] * percent)
+        vocab_size -= drop
+
+        word_list = []
+        for i in range(drop):
+            index = int(ranks[-i - 1, 0])
+            dropped_words[c].append(vocab[c][index])
+            word_list.append(vocab[c][index])
+        for w in word_list:
+            vocab[c].remove(w)
+
+    return dropped_words
+
+
+def semcat_reader(config: Config) -> SemCat:
     """
     Reads in SEMCAT categories and words
 
     Parameters
     ----------
-    input_dir: str
-        The path to the directory where the categories are found.
-    embedding: Embedding
-        The object of the embedding to ensure the match with the vocab
-    random: bool
-        Flag to drop words randomly from categories
-    seed: int
-        Seed for the random number generation
-    percent:
-        The percentage of the words to be dropped
-    center:
-        Dropping words from categories based on the category centers
+    config: Config
+        reference
     Returns
     -------
     SemCat:
         Wrapper
     """
-    if random and center:
-        raise Exception("Use 'random' or 'center' not both!")
-
     vocab = {}
     vocab_size = 0
 
     w2i, i2w = {}, {}
 
     id = 0
-
-    for file in os.listdir(input_dir):
+    # Read categories
+    for file in os.listdir(config.semantic_categories.path):
         if file.endswith(".txt"):
             category_name = file.rstrip('.txt').split('-')[0]
-            with open(os.path.join(input_dir, file), mode='r', encoding='utf8') as f:
+            with open(os.path.join(config.semantic_categories.path, file), mode='r', encoding='utf8') as f:
                 words = f.read().splitlines()
                 vocab_size += words.__len__()
                 w2i[category_name] = id
                 vocab[category_name] = words
                 id += 1
 
-    random.seed(params["seed"])
-    percent = params["percent"]
-    rng_dropout = params["random"]
+    random.seed(config.semantic_categories.seed)
+    percent = config.semantic_categories.drop_rate
 
-    dropped_words = {}
+    dropped_words = None
 
-    if rng_dropout:
-        for c in vocab:
-            if c not in dropped_words:
-                dropped_words[c] = []
-
-            existing_words = []
-            for word in vocab[c]: # iterating over words
-                try:
-                    _ = embedding.W[embedding.w2i[word]]
-                    existing_words.append(word)
-                except KeyError:
-                    continue
-
-            size = existing_words.__len__()
-            rm_num = math.floor(size*percent)
-            vocab_size -= rm_num
-            for i in range(rm_num):
-                rng = random.randint(0, size-i-1)
-                dropped_words[c].append(existing_words[rng])
-                del existing_words[rng]
-            vocab[c] = existing_words
-
-    if params["center"]:
-        for c in vocab: # c is the category
-            if c not in dropped_words: # populating dropped_words with empty lists
-                dropped_words[c] = []
-            mean = None
-            for word in vocab[c]: # iterating over words
-                try:
-                    # getting coefficients of the words of c
-                    if mean is None:
-                        mean = np.array([embedding.W[embedding.w2i[word]]])
-                    else:
-                        vector = [embedding.W[embedding.w2i[word]]]
-                        mean = np.append(mean, vector, axis=0)
-                except KeyError:
-                    continue
-            # getting the category center
-            mean = np.mean(mean)
-            ranks = None
-            # calculating distances from the category centers and sorting by that afterwards
-            for i, word in enumerate(vocab[c]):
-                try:
-                    if ranks is None:
-                        ranks = np.array([[i, _distance(mean, embedding.W[embedding.w2i[word]])]])
-                    else:
-                        ranks = np.append(ranks, [[i, _distance(mean, embedding.W[embedding.w2i[word]])]], axis=0)
-                except KeyError:
-                    continue
-            ranks = ranks[ranks[:, 1].argsort(), :]
-            drop = math.floor(ranks.shape[0]*percent)
-            vocab_size -= drop
-
-            word_list = []
-            for i in range(drop):
-                index = int(ranks[-i-1, 0])
-                dropped_words[c].append(vocab[c][index])
-                word_list.append(vocab[c][index])
-            for w in word_list:
-                vocab[c].remove(w)
+    if config.semantic_categories.drop_method == 'random':
+        dropped_words = random_drop(vocab, config.embedding.embedding, percent, vocab_size)
+    elif config.semantic_categories.drop_method == 'category_center':
+        dropped_words = category_center(vocab, config.embedding.embedding, percent, vocab_size)
 
     i2w = {v: k for k, v in w2i.items()}
 
-    logging.info(
+    config.logger.info(
         f"{vocab.__len__()} categories are read from SEMCAT files, which contain overall {vocab_size} words.")
     return SemCat(vocab, w2i, i2w, dropped_words)
 

@@ -7,6 +7,7 @@ class SemanticCategories:
         self.drop_method = None
         self.drop_rate = None
         self.seed = None
+        self.categories = None
 
     def to_json(self) -> str:
         return json.dumps(
