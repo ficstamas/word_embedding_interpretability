@@ -69,5 +69,4 @@ if __name__ == '__main__':
     config.semantic_categories.categories = semcat
 
     model = DefaultModel()
-    model.run()
-    model.save()
+    model.load()

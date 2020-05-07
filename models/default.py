@@ -112,7 +112,35 @@ class DefaultModel(Model):
                                 f"{os.path.join(self.config.project.models, 'transformed_space_distance_matrix.npy')}")
 
     def load(self):
-        pass
+        self.config.data.init_shared_memory(self.config.data.distance_matrix, self.dist_shape, np.float, self.config)
+        self.config.data.init_shared_memory(self.config.data.transformed_space, self.trans_shape, np.float, self.config)
+        self.config.data.init_shared_memory(self.config.data.transformed_space_distance_matrix, self.trans_dist_shape,
+                                            np.float, self.config)
+
+        transformed_mem = SharedMemory(self.config.data.transformed_space)
+        transformed_space = np.ndarray(shape=self.config.data.transformed_space_shape, buffer=transformed_mem.buf)
+
+        dist_mem = SharedMemory(self.config.data.distance_matrix)
+        distance_matrix = np.ndarray(shape=self.config.data.distance_matrix_shape, buffer=dist_mem.buf)
+
+        transformed_space_distance_mem = SharedMemory(self.config.data.transformed_space_distance_matrix)
+        transformed_space_distance_matrix = np.ndarray(shape=self.config.data.transformed_space_distance_matrix_shape,
+                                                       buffer=transformed_space_distance_mem.buf)
+
+        distance_matrix[:, :, :] = np.load(os.path.join(self.config.project.models, "distance_matrix.npy"))[:, :, :]
+        self.config.logger.info(f"Distance matrix is loaded from "
+                                f"{os.path.join(self.config.project.models, 'distance_matrix.npy')}")
+
+        transformed_space[:, :] = np.load(os.path.join(self.config.project.models, "transformed_space.npy"))[:, :]
+        self.config.logger.info(f"Transformed space is loaded from "
+                                f"{os.path.join(self.config.project.models, 'transformed_space.npy')}")
+
+        transformed_space_distance_matrix[:, :, :] = np.load(
+            os.path.join(self.config.project.models,
+                         "transformed_space_distance_matrix.npy")
+        )[:, :, :]
+        self.config.logger.info(f"Distance matrix of transformed space is loaded from "
+                                f"{os.path.join(self.config.project.models, 'transformed_space_distance_matrix.npy')}")
 
     @staticmethod
     def _process(source: str, modulus: int, config: Config):
