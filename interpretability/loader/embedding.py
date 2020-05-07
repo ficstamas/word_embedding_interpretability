@@ -110,7 +110,7 @@ class Embedding(object):
         self._memories.append(i2w_memory)
         self._memories.append(w2i_memory)
         self._memories.append(memory)
-        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size/8/1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
+        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size/1024/1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
 
     def load_sparse_embeddings(self, path, max_words=-1):
         """
@@ -180,7 +180,7 @@ class Embedding(object):
         self._memories.append(i2w_memory)
         self._memories.append(w2i_memory)
         self._memories.append(memory)
-        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size/8/1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
+        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size/1024/1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
 
     @classmethod
     def buff_to_dict(cls, shr: SharedMemory, size: int) -> dict:

@@ -60,7 +60,7 @@ class Project:
         # generating dirs
 
         self.logs = os.path.join(self.project, "logs")
-        self.models = os.path.join(self.project, "models")
+        self.models = os.path.join(self.project, "saves")
         self.results = os.path.join(self.project, "results")
         try:
             os.mkdir(self.logs)

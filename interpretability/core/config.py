@@ -15,6 +15,7 @@ class Config(metaclass=Singleton):
         self.distance = Distance()
         self.kde = KDE()
         self.project = Project()
+        self.data = Data()
         # Logging config
         self.logger = logging.getLogger("default")
 

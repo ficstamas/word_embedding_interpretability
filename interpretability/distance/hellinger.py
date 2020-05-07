@@ -3,11 +3,10 @@ from scipy.integrate import quad
 from sklearn.neighbors import KernelDensity
 from typing import Tuple, Literal
 
-
 __all__ = ["closed_hellinger_distance", "continuous_hellinger_distance"]
 
 
-def closed_hellinger_distance(p: np.ndarray, q: np.ndarray) -> Tuple[int, int]:
+def closed_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int, int]:
     """
     Calculates Hellinger distance between two vectors which assumed to come from normal distribution
     Parameters
@@ -16,6 +15,8 @@ def closed_hellinger_distance(p: np.ndarray, q: np.ndarray) -> Tuple[int, int]:
         Vector 1
     q : np.ndarray
         Vector 2
+    config: Config
+        Just to maintain uniform headers between distance functions
     Returns
     -------
     tuple
@@ -47,8 +48,7 @@ def _remove_zeros(x: np.ndarray):
     return r
 
 
-def continuous_hellinger_distance(p: np.ndarray, q: np.ndarray, bandwidth=0.2,
-                                  kernel=Literal['gaussian', 'tophat', 'epanechnikov', 'exponential', 'linear', 'cosine']) -> Tuple[int, int]:
+def continuous_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int, int]:
     """
     Calculates Hellinger distance between two vectors
     Parameters
@@ -57,23 +57,22 @@ def continuous_hellinger_distance(p: np.ndarray, q: np.ndarray, bandwidth=0.2,
         Vector 1
     q
         Vector 2
-    bandwidth
-        The bandwidth used for kernel density estimation
-    kernel
-        The kernel used for kernel density estimation, any kernel can be applied which is supported by sklearn's KernelDensity class
+    config: Config
+        Contains parameters for KDE
     Returns
     -------
     tuple
         Returns with the distance and the sign of the difference of means
     """
+
     p = _remove_zeros(p)
     q = _remove_zeros(q)
     # Mean of p and q
     mean1 = np.mean(p)
     mean2 = np.mean(q)
 
-    p_kde = KernelDensity(bandwidth=bandwidth, kernel=kernel)
-    q_kde = KernelDensity(bandwidth=bandwidth, kernel=kernel)
+    p_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
+    q_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
     _p = p[:, np.newaxis]
     p_kde_fit = p_kde.fit(_p)
 
