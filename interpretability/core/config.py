@@ -3,6 +3,7 @@ from typing import Literal
 import os
 import json
 from .config_modules import *
+import logging
 
 __all__ = ["Config"]
 
@@ -14,6 +15,8 @@ class Config(metaclass=Singleton):
         self.distance = Distance()
         self.kde = KDE()
         self.project = Project()
+        # Logging config
+        self.logger = logging.getLogger("default")
 
     def set_embedding(self, path: str, dense: bool, lines_to_read: int):
         self.embedding.path = path
@@ -30,6 +33,25 @@ class Config(metaclass=Singleton):
     def set_project_path(self, path: str, name: str):
         self.project.workspace = os.path.join(os.getcwd(), path)
         self.project.name = name
+
+        formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
+        path = os.path.join(self.project.logs, "debug.log")
+        file_handler = logging.FileHandler(path)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(logging.INFO)
+        stream_handler.setFormatter(formatter)
+
+        error_file_handler = logging.FileHandler(os.path.join(self.project.logs, "error.log"))
+        error_file_handler.setLevel(logging.ERROR)
+        error_file_handler.setFormatter(formatter)
+
+        self.logger.addHandler(file_handler)
+        # self.logger.addHandler(stream_handler)
+        self.logger.addHandler(error_file_handler)
 
     def set_kde(self, kernel: str, bandwidth: float):
         self.kde.kernel = kernel
