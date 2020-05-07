@@ -13,6 +13,7 @@ class Project:
         self.logs = None
         self.models = None
         self.results = None
+        self.processes = None
         self._structure_generated = False
 
     @property
@@ -43,6 +44,11 @@ class Project:
         """
         Generates the file structure
         """
+        try:
+            os.mkdir(self.workspace)
+            logging.info(f"Workspace created at: {self.workspace}")
+        except FileExistsError:
+            pass
         self.project = os.path.join(self.workspace, self.name)
         logging.info(f"Creating project in: {self.name}")
         try:
@@ -83,6 +89,7 @@ class Project:
                 "logs": self.logs,
                 "models": self.models,
                 "results": self.results,
+                "processes": self.processes
             })
 
     def __str__(self):

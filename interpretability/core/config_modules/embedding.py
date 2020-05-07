@@ -6,6 +6,7 @@ class Embedding:
         self.path = None
         self.dense = None
         self.lines_to_read = None
+        self.object = None
 
     def to_json(self) -> str:
         return json.dumps(

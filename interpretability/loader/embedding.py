@@ -7,15 +7,10 @@ from zipfile import ZipFile
 from multiprocessing.shared_memory import SharedMemory
 import json
 import array
-
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
+from interpretability.core.config import Config
 
 
-__all__ = ["Embedding", "embedding_reader"]
+__all__ = ["Embedding"]
 
 
 class Embedding(object):
@@ -24,20 +19,8 @@ class Embedding(object):
     Objects are assumed to be located in the rows.
     """
 
-    def __init__(self, embedding_path, dense_input, max_words=-1):
-        """
-        Parameters
-        ----------
-        embedding_path : str
-            Location of the embedding
-        dense_input : bool
-            Marks if it is a dense embedding
-        words_to_keep : list, optional
-            list of words to keep
-        max_words : int, optional
-            Indicates the number of lines to read in.
-            If negative, the entire file gets processed.
-        """
+    def __init__(self, config: Config):
+        self.config = config
         self._memories = []
         # Shared memory object
         self.embedding_memory_name = "embedding"
@@ -52,10 +35,10 @@ class Embedding(object):
         self.w2i_memory_name = "w2i"
         self.w2i_memory_size = 0
 
-        if dense_input:
-            self.load_dense_embeddings(embedding_path, max_words=max_words)
+        if config.embedding.dense:
+            self.load_dense_embeddings(config.embedding.path, max_words=config.embedding.lines_to_read)
         else:
-            self.load_sparse_embeddings(embedding_path, max_words=max_words)
+            self.load_sparse_embeddings(config.embedding.path, max_words=config.embedding.lines_to_read)
 
     def load_dense_embeddings(self, path: str, max_words=-1):
         """
@@ -66,20 +49,9 @@ class Embedding(object):
         path : str
             Location of the gzipped dense embedding file
             If None, no filtering takes place.
-        words_to_keep : list, optional
-            list of words to keep
         max_words : int, optional
             Indicates the number of lines to read in.
             If negative, the entire file gets processed.
-        Returns
-        -------
-        tuple:
-            w2i:
-                Wordform to identifier dictionary (Can be accessed as SharedMemory: w2i),
-            i2w:
-                Identifier to wordform dictionary (Can be accessed as SharedMemory: i2w),
-            W:
-                The dense embedding matrix (Can be accessed as SharedMemory: embedding)
         """
         if path.endswith('.gz'):
             lines = gzip.open(path, 'rt')
@@ -91,7 +63,7 @@ class Embedding(object):
         data, words = [], []
         for counter, line in enumerate(lines):
             if len(words) % 5000 == 0:
-                logging.info("{} lines read in from a dense embedding file".format(len(words)))
+                self.config.logger.info("{} lines read in from a dense embedding file".format(len(words)))
 
             if len(words) == max_words:
                 break
@@ -105,7 +77,7 @@ class Embedding(object):
                     data.append(values)
                     words.append(tokens[0])
             except Exception:
-                print('Error while parsing input line #{}: {}'.format(counter, line))
+                self.config.logger.error('Error while parsing input line #{}: {}'.format(counter, line))
 
         W = np.array(data)
 
@@ -138,6 +110,7 @@ class Embedding(object):
         self._memories.append(i2w_memory)
         self._memories.append(w2i_memory)
         self._memories.append(memory)
+        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size} bytes")
 
     def load_sparse_embeddings(self, path, max_words=-1):
         """
@@ -148,20 +121,9 @@ class Embedding(object):
         path : str
             Location of the gzipped sparse embedding file
             If None, no filtering takes place.
-        words_to_keep : list, optional
-            list of words to keep
         max_words : int, optional
             Indicates the number of lines to read in.
             If negative, the entire file gets processed.
-        Returns
-        -------
-        tuple:
-            w2i:
-                Wordform to identifier dictionary,
-            i2w:
-                Identifier to wordform dictionary,
-            W:
-                The sparse embedding matrix
         """
 
         i2w = {}
@@ -175,7 +137,7 @@ class Embedding(object):
         for line_number, line in enumerate(lines):
 
             if len(i2w) % 5000 == 0:
-                logging.info("{} lines read in from a sparse embedding file".format(len(i2w)))
+                self.config.logger.info("{} lines read in from a sparse embedding file".format(len(i2w)))
 
             if line_number == max_words:
                 break
@@ -218,6 +180,7 @@ class Embedding(object):
         self._memories.append(i2w_memory)
         self._memories.append(w2i_memory)
         self._memories.append(memory)
+        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size} bytes")
 
     @classmethod
     def buff_to_dict(cls, shr: SharedMemory, size: int) -> dict:
@@ -225,31 +188,3 @@ class Embedding(object):
         json_string = json_string_bytes.tobytes().decode("utf8")
         dictionary = json.loads(json_string)
         return dictionary
-
-
-def embedding_reader(input_file: str, dense_file: bool, lines_to_read=-1):
-    """
-    Reads embedding file
-    Parameters
-    ----------
-        input_file : str
-            Path to the input file.
-        dense_file : bool
-            True if it marks a dense embedding, false otherwise.
-        lines_to_read : int, optional
-            Indicates the number of lines to read in.
-            If negative, the entire file gets processed.
-        mcrae_dir : str, optional
-            Path to the McRae file
-        mcrae_words_only : bool
-            Use McRae words only
-    Returns
-    -------
-    Embedding:
-        The Embedding object
-    """
-    path_to_embedding = input_file
-
-    emb = Embedding(path_to_embedding, dense_file, max_words=lines_to_read)
-
-    return emb

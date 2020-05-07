@@ -27,9 +27,4 @@ conf.set_project_path("./", "test")
 
 print(conf.project)
 
-logger = conf.logger
-
-logger.info("Info")
-logger.error("Error")
-logger.debug("Debug")
-logger.debug("Warning")
+conf.log_config()

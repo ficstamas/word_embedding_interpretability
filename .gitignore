@@ -131,6 +131,8 @@ dmypy.json
 # PyCharm
 .idea/
 
-# Folder which which is containing large amount of data
+# Folder which is containing large amount of data
 data/
 results/
+workspaces/
+workspace/

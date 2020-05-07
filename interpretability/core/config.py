@@ -52,6 +52,7 @@ class Config(metaclass=Singleton):
         self.logger.addHandler(file_handler)
         # self.logger.addHandler(stream_handler)
         self.logger.addHandler(error_file_handler)
+        self.logger.info("Logging Handlers are initiated!")
 
     def set_kde(self, kernel: str, bandwidth: float):
         self.kde.kernel = kernel
@@ -59,6 +60,18 @@ class Config(metaclass=Singleton):
 
     def set_distance(self, dist: Literal['bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal']):
         self.distance.name = dist
+
+    def log_config(self):
+        log = self.logger
+        log.info(f"Workspace is set to: {self.project.project}")
+        log.info(f"The project name is: {self.project.name}")
+        log.info(f"Embedding path is: {self.embedding.path}" + (" which is a dense" if self.embedding.dense else " which is a sparse") + " embedding.")
+        log.info(f"{self.embedding.lines_to_read} are read")
+        log.info(f"{self.semantic_categories.path} is going to be used with {self.semantic_categories.drop_method} "
+                 f"method, {self.semantic_categories.drop_rate} drop rate and {self.semantic_categories.seed} seed")
+        log.info(f"{self.distance.name} is going to be used")
+        log.info(f"Kernel Density Estimation: kernel={self.kde.kernel}, bandwidth={self.kde.bandwidth}")
+        log.info(f"The program is going to use {self.project.processes} processes")
 
     def to_json(self):
         return json.dumps(
