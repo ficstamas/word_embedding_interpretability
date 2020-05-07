@@ -4,6 +4,8 @@ from interpretability.core.config import Config
 from models import *
 from interpretability.loader.embedding import Embedding as EmbeddingObject
 from interpretability.loader.semcat import semcat_reader
+import json
+import os
 
 
 if __name__ == '__main__':
@@ -70,3 +72,6 @@ if __name__ == '__main__':
 
     model = DefaultModel()
     model.load()
+
+    with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
+        json.dump(config.__repr__(), f, indent=4)
