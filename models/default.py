@@ -196,4 +196,7 @@ class DefaultModel(Model):
                     distance, sign = config.distance.function(_p, _q, config)
                     distance_matrix[i, j, 0] = distance
                     distance_matrix[i, j, 1] = sign
+        weights_mem.close()
+        dist_mem.close()
+        w2i_mem.close()
 
