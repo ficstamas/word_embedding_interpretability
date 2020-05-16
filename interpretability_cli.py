@@ -4,6 +4,7 @@ from interpretability.core.config import Config
 from models import *
 from interpretability.loader.embedding import Embedding as EmbeddingObject
 from interpretability.loader.semcat import semcat_reader
+from validation import interpretability, accuracy
 import json
 import os
 
@@ -48,8 +49,21 @@ if __name__ == '__main__':
     parser.add_argument("--processes", type=int, required=False,
                         help="Number of processes to use. (Default: 2)")
 
+    # Used Model and Validation
+    parser.add_argument("--model", type=str, required=True,
+                        help="The used model for calculation")
+    parser.add_argument("-load", type=bool, required=False,
+                        help="Calculate interpretability scores")
+    parser.add_argument("-save", type=bool, required=False,
+                        help="Calculate interpretability scores")
+    parser.add_argument("-interpretability", type=bool, required=False,
+                        help="Calculate interpretability scores")
+    parser.add_argument("-accuracy", type=bool, required=False,
+                        help="Calculate accuracy of the model")
+
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
-                        smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2)
+                        smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
+                        model="default", interpretability=False, accuracy=False, load=False, save=False)
 
     args = parser.parse_args()
 
@@ -65,13 +79,28 @@ if __name__ == '__main__':
 
     config.log_config()
 
+    # Loading
     embedding = EmbeddingObject(config)
     config.embedding.embedding = embedding
     semcat = semcat_reader(config)
     config.semantic_categories.categories = semcat
 
-    model = DefaultModel()
-    model.load()
+    # Models
+    if args.model == "default":
+        model = DefaultModel()
+        if args.load:
+            model.load()
+        else:
+            model.run()
+
+        if args.save():
+            model.save()
+
+        if args.interpretability:
+            interpretability.interpretability(config)
+
+        if args.accuracy:
+            accuracy.accuracy(config)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)
