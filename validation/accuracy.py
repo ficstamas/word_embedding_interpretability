@@ -81,8 +81,8 @@ def accuracy(config: Config):
                 top_n = dim_sorted[-(n * validation):]
                 bot_n = dim_sorted[:n * validation]
                 # getting the associated words
-                words_top = set([i2w[int(ind)] for ind in top_n[:, 1]])
-                words_bottom = set([i2w[int(ind)] for ind in bot_n[:, 1]])
+                words_top = set([i2w[str(int(ind))] for ind in top_n[:, 1]])
+                words_bottom = set([i2w[str(int(ind))] for ind in bot_n[:, 1]])
                 # test words
                 cat_words = set(semcat.dropped_words[semcat.i2c[cat]])
                 # intersection with the category

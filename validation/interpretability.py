@@ -4,12 +4,13 @@ from interpretability.score.wrappers.descriptors import MemoryInfo
 import os
 
 
-def interpretability(config: Config, raw=False, lamb=10):
+def interpretability(config: Config, raw=False, lamb=2, processes=2):
     """
     Calculates interpretability scores
     :param config:
     :param raw: If True calculates the interpretability of the raw embedding
     :param lamb: Relaxation parameter
+    :param processes: Number of processes to use
     :return:
     """
     config.logger.info("Calculating interpretability...")
@@ -29,7 +30,7 @@ def interpretability(config: Config, raw=False, lamb=10):
         distance_info.shape = config.data.transformed_space_distance_matrix_shape
     config.logger.info(embedding_info.__str__())
     config.logger.info(distance_info.__str__())
-    results = score(config, embedding_info, distance_info, lamb=lamb)
+    results = score(config, embedding_info, distance_info, lamb=lamb, proc=processes)
     config.logger.info(f"Results: {results}")
     with open(os.path.join(config.project.results, "interpretability.txt"), mode="w", encoding="utf8") as f:
         for i, res in enumerate(results):

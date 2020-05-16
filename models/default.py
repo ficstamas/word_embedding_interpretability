@@ -23,14 +23,20 @@ class DefaultModel(Model):
         self.config.data.distance_matrix_shape = self.dist_shape
         self.config.data.transformed_space_shape = self.trans_shape
         self.config.data.transformed_space_distance_matrix_shape = self.trans_dist_shape
+        self._memory_initiated = False
 
     def run(self):
 
-        # initing shared memories for results
-        self.config.data.init_shared_memory(self.config.data.distance_matrix, self.dist_shape, np.float, self.config)
-        self.config.data.init_shared_memory(self.config.data.transformed_space, self.trans_shape, np.float, self.config)
-        self.config.data.init_shared_memory(self.config.data.transformed_space_distance_matrix, self.trans_dist_shape,
-                                            np.float, self.config)
+        if not self._memory_initiated:
+            # initing shared memories for results
+            self.config.data.init_shared_memory(self.config.data.distance_matrix, self.dist_shape, np.float,
+                                                self.config)
+            self.config.data.init_shared_memory(self.config.data.transformed_space, self.trans_shape, np.float,
+                                                self.config)
+            self.config.data.init_shared_memory(self.config.data.transformed_space_distance_matrix,
+                                                self.trans_dist_shape,
+                                                np.float, self.config)
+            self._memory_initiated = True
 
         cores = cpu_count()
 
@@ -112,10 +118,16 @@ class DefaultModel(Model):
                                 f"{os.path.join(self.config.project.models, 'transformed_space_distance_matrix.npy')}")
 
     def load(self):
-        self.config.data.init_shared_memory(self.config.data.distance_matrix, self.dist_shape, np.float, self.config)
-        self.config.data.init_shared_memory(self.config.data.transformed_space, self.trans_shape, np.float, self.config)
-        self.config.data.init_shared_memory(self.config.data.transformed_space_distance_matrix, self.trans_dist_shape,
-                                            np.float, self.config)
+        if not self._memory_initiated:
+            # initing shared memories for results
+            self.config.data.init_shared_memory(self.config.data.distance_matrix, self.dist_shape, np.float,
+                                                self.config)
+            self.config.data.init_shared_memory(self.config.data.transformed_space, self.trans_shape, np.float,
+                                                self.config)
+            self.config.data.init_shared_memory(self.config.data.transformed_space_distance_matrix,
+                                                self.trans_dist_shape,
+                                                np.float, self.config)
+            self._memory_initiated = True
 
         transformed_mem = SharedMemory(self.config.data.transformed_space)
         transformed_space = np.ndarray(shape=self.config.data.transformed_space_shape, buffer=transformed_mem.buf)

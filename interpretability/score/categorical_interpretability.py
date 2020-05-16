@@ -1,6 +1,5 @@
 import numpy as np
-from interpretability.loader.embedding import Embedding
-from interpretability.loader.semcat import SemCat
+import tqdm
 import multiprocessing
 from multiprocessing.shared_memory import SharedMemory
 from interpretability.core.config import Config
@@ -12,7 +11,7 @@ def V_p(V, n_j, lamb, config: Config):
     # i2w
     i2w_mem = SharedMemory(embedding.i2w_memory_name)
     i2w = embedding.buff_to_dict(i2w_mem, embedding.i2w_memory_size)
-    return set([i2w[int(o)] for o in V[1, -lamb * n_j:]])
+    return set([i2w[str(int(o))] for o in V[1, -lamb * n_j:]])
 
 
 def V_n(V, n_j, lamb, config: Config):
@@ -20,7 +19,7 @@ def V_n(V, n_j, lamb, config: Config):
     # i2w
     i2w_mem = SharedMemory(embedding.i2w_memory_name)
     i2w = embedding.buff_to_dict(i2w_mem, embedding.i2w_memory_size)
-    return set([i2w[int(o)] for o in V[1, :lamb * n_j]])
+    return set([i2w[str(int(o))] for o in V[1, :lamb * n_j]])
 
 
 def is_p(i, j, config: Config, embedding_memory: MemoryInfo, lamb: int):
@@ -69,11 +68,14 @@ def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: Me
     IS_i = []
 
     # seq is the concept dimension indexes
-    for i in range(config.semantic_categories.categories.i2c.__len__()):
+    for i in tqdm.trange(config.semantic_categories.categories.i2c.__len__()):
         IS_i.append(is_i(i, config, embedding_memory, distance_memory, lamb))
     return IS_i
 
 
+# TODO Linux fix
+# TODO IS output avg
+# TODO Test accuracy
 def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, proc=5, lamb=5):
     IS_i = []
 

@@ -93,7 +93,7 @@ if __name__ == '__main__':
         else:
             model.run()
 
-        if args.save():
+        if args.save:
             model.save()
 
         if args.interpretability:
