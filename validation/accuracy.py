@@ -15,6 +15,7 @@ def accuracy(config: Config):
     :param config:
     :return:
     """
+    config.logger.info("Calculating accuracy...")
     # Loading memories
     # Embedding
     embedding = config.embedding.embedding
@@ -100,7 +101,9 @@ def accuracy(config: Config):
         # saving method related accuracy
         values[str(validation)] = k_vector
 
-    opath = os.path.join(os.getcwd(), config.project.results, "accuracy.txt")
+    config.logger.info(f"Results are: {values}")
+
+    opath = os.path.join(config.project.results, "accuracy.txt")
     f = open(opath, mode="w", encoding="utf8")
     for key in values:
         f.write(f"# Validation size: {key}\n")
@@ -110,3 +113,5 @@ def accuracy(config: Config):
             i += 1
         f.write("\n")
     f.close()
+
+    config.logger.info(f"Results are saved to {opath}")
