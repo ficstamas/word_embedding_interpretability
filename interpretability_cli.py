@@ -52,13 +52,13 @@ if __name__ == '__main__':
     # Used Model and Validation
     parser.add_argument("--model", type=str, required=True,
                         help="The used model for calculation")
-    parser.add_argument("-load", type=bool, required=False,
+    parser.add_argument("-load",action='store_true', required=False,
                         help="Calculate interpretability scores")
-    parser.add_argument("-save", type=bool, required=False,
+    parser.add_argument("-save", action='store_true', required=False,
                         help="Calculate interpretability scores")
-    parser.add_argument("-interpretability", type=bool, required=False,
+    parser.add_argument("-interpretability", action='store_true', required=False,
                         help="Calculate interpretability scores")
-    parser.add_argument("-accuracy", type=bool, required=False,
+    parser.add_argument("-accuracy", action='store_true', required=False,
                         help="Calculate accuracy of the model")
 
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
