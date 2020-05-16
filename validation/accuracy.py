@@ -10,6 +10,11 @@ from multiprocessing.shared_memory import SharedMemory
 
 
 def accuracy(config: Config):
+    """
+    Calculates the accuracy of the transformation
+    :param config:
+    :return:
+    """
     # Loading memories
     # Embedding
     embedding = config.embedding.embedding
