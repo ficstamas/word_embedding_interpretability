@@ -49,15 +49,15 @@ def accuracy(config: Config):
         for k in _k:
             sparse_w_b = copy.deepcopy(distance_matrix[:, :, 0])
             # Select top K values
-            for i in range(distance_matrix.shape[0]):
+            for i in range(distance_matrix.shape[1]):
                 q = queue.PriorityQueue()
-                for j in range(distance_matrix.shape[1]):
-                    q.put(distance_matrix[i, j, 0])
-                for j in range(distance_matrix.shape[1] - k):
+                for j in range(distance_matrix.shape[0]):
+                    q.put(distance_matrix[j, i, 0])
+                for j in range(distance_matrix.shape[0] - k):
                     q.get()
-                sparse_w_b[i, sparse_w_b[i] < q.get()] = 0
+                sparse_w_b[sparse_w_b[:, i] < q.get(), i] = 0
 
-            w_nb = Normalizer('l1').transform(sparse_w_b).T
+            w_nb = Normalizer('l1').transform(sparse_w_b.T).T
 
             # Sign correction
             w_nsb = w_nb * distance_matrix[:, :, 1]

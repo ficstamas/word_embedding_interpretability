@@ -74,12 +74,11 @@ def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: Me
 
 
 # TODO Linux fix
-# TODO IS output avg
 # TODO Test accuracy
 def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, proc=5, lamb=5):
     IS_i = []
-
-    pool = multiprocessing.Pool(processes=proc)
+    number_of_processes = min(proc, lamb)
+    pool = multiprocessing.Pool(processes=number_of_processes)
 
     inputs = []
     for i in range(lamb):
@@ -89,6 +88,6 @@ def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryI
         result = p.starmap(score_dist, inputs)
 
     for res in result:
-        IS_i += res
+        IS_i.append(np.mean(np.array(res)).tolist())
 
     return IS_i
