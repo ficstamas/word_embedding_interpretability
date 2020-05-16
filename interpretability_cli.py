@@ -50,7 +50,7 @@ if __name__ == '__main__':
                         help="Number of processes to use. (Default: 2)")
 
     # Used Model and Validation
-    parser.add_argument("--model", type=str, required=True,
+    parser.add_argument("--model", type=str, required=False,
                         help="The used model for calculation")
     parser.add_argument("-load",action='store_true', required=False,
                         help="Calculate interpretability scores")
