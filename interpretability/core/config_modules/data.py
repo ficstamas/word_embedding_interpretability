@@ -13,6 +13,11 @@ class Data:
         self.transformed_space_distance_matrix_shape = None
         self._memories = []
 
+    def free(self):
+        for mem in self._memories:
+            mem: SharedMemory
+            mem.unlink()
+
     def init_shared_memory(self, name, shape, dtype, config):
         log = config.logger
         matrix = np.zeros(shape, dtype=dtype)

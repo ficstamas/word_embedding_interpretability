@@ -84,6 +84,10 @@ class Config(metaclass=Singleton):
                 "semantic_categories": self.semantic_categories.__repr__()
             })
 
+    def free(self):
+        self.embedding.embedding.free()
+        self.data.free()
+
     def __str__(self):
         return self.to_json()
 

@@ -104,3 +104,5 @@ if __name__ == '__main__':
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)
+
+    config.free()

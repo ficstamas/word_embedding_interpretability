@@ -188,3 +188,8 @@ class Embedding(object):
         json_string = json_string_bytes.tobytes().decode("utf8")
         dictionary = json.loads(json_string)
         return dictionary
+
+    def free(self):
+        for mem in self._memories:
+            mem: SharedMemory
+            mem.unlink()
