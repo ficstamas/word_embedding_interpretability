@@ -45,7 +45,7 @@ def is_p(i, j, config: Config, embedding_memory: MemoryInfo, lamb: int):
 
 
 def j_star(i: int, distance_matrix: np.ndarray):
-    return int(np.argmax(distance_matrix[:, i]).astype(dtype=np.int))
+    return int(np.argmax(distance_matrix[:, i, 0]).astype(dtype=np.int))
 
 
 def is_i(i: int, config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, lamb):
@@ -74,7 +74,6 @@ def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: Me
 
 
 # TODO Linux fix
-# TODO Test accuracy
 def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, proc=5, lamb=5):
     IS_i = []
     number_of_processes = min(proc, lamb)
