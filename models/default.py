@@ -45,7 +45,7 @@ class DefaultModel(Model):
 
         # run mp
         with Pool(min(self.config.project.processes, cores)) as pool:
-            pool.starmap(DefaultModel._process, params)
+            pool.starmap(self._process, params)
 
         self.config.logger.info(f"Distance matrix calculation is done!")
 
@@ -85,7 +85,7 @@ class DefaultModel(Model):
 
         # run mp
         with Pool(min(self.config.project.processes, cores)) as pool:
-            pool.starmap(DefaultModel._process, params)
+            pool.starmap(self._process, params)
 
         self.config.logger.info("Done!")
 
