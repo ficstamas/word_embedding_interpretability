@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if platform.system() == 'Linux':
-        memory_prefix = f"{os.getuid()}/{os.getpid()}/{int(round(time.time()*1000))}"
+        memory_prefix = f"{os.getuid()}_{os.getpid()}_{int(round(time.time()*1000))}_"
     elif platform.system() == 'Windows':
         memory_prefix = f"{int(round(time.time()*1000))}"
     else:
