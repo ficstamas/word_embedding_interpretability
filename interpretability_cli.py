@@ -95,24 +95,26 @@ if __name__ == '__main__':
     config.semantic_categories.categories = semcat
 
     # Models
+    model = None
     if args.model == "default":
         model = DefaultModel()
-        if args.load:
-            model.load()
-        else:
-            model.run()
-
-        if args.save:
-            model.save()
-
-        if args.interpretability:
-            interpretability.interpretability(config)
-
-        if args.accuracy:
-            accuracy.accuracy(config)
     elif args.model == "mcmc":
         model = MCMCModel()
+
+    # Init values
+    if args.load:
+        model.load()
+    else:
         model.run()
+    # Save
+    if args.save:
+        model.save()
+    # Interpretability
+    if args.interpretability:
+        interpretability.interpretability(config)
+    # Accuracy
+    if args.accuracy:
+        accuracy.accuracy(config)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)
