@@ -23,16 +23,16 @@ class Embedding(object):
         self.config = config
         self._memories = []
         # Shared memory object
-        self.embedding_memory_name = "embedding"
+        self.embedding_memory_name = config.memory_prefix+"embedding"
         # Type and shape of the array in shared memory
         self.embedding_memory_dtype = None
         self.embedding_memory_size = None
         self.embedding_memory_shape = None
 
         # Shared memory objects (dict is dumped into as json string and converted to bytes[utf8])
-        self.i2w_memory_name = "i2w"
+        self.i2w_memory_name = config.memory_prefix+"i2w"
         self.i2w_memory_size = 0
-        self.w2i_memory_name = "w2i"
+        self.w2i_memory_name = config.memory_prefix+"w2i"
         self.w2i_memory_size = 0
 
         if config.embedding.dense:

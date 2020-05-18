@@ -4,12 +4,12 @@ import numpy as np
 
 
 class Data:
-    def __init__(self):
-        self.distance_matrix = "distance_matrix"
+    def __init__(self, memory_prefix: str):
+        self.distance_matrix = memory_prefix+"distance_matrix"
         self.distance_matrix_shape = None
-        self.transformed_space = "transformed_space"
+        self.transformed_space = memory_prefix+"transformed_space"
         self.transformed_space_shape = None
-        self.transformed_space_distance_matrix = "transformed_space_distance_matrix"
+        self.transformed_space_distance_matrix = memory_prefix+"transformed_space_distance_matrix"
         self.transformed_space_distance_matrix_shape = None
         self._memories = []
 

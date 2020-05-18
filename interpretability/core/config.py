@@ -9,13 +9,14 @@ __all__ = ["Config"]
 
 
 class Config(metaclass=Singleton):
-    def __init__(self):
+    def __init__(self, memory_prefix: str):
+        self.memory_prefix = memory_prefix
         self.embedding = Embedding()
         self.semantic_categories = SemanticCategories()
         self.distance = Distance()
         self.kde = KDE()
         self.project = Project()
-        self.data = Data()
+        self.data = Data(memory_prefix)
         # Logging config
         self.logger = logging.getLogger("default")
 

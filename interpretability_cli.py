@@ -7,7 +7,9 @@ from interpretability.loader.semcat import semcat_reader
 from validation import interpretability, accuracy
 import json
 import os
-
+import time
+import platform
+import sys
 
 if __name__ == '__main__':
     freeze_support()  # for Windows support
@@ -66,8 +68,15 @@ if __name__ == '__main__':
                         model="default", interpretability=False, accuracy=False, load=False, save=False)
 
     args = parser.parse_args()
+    if platform.system() == 'Linux':
+        memory_prefix = f"{os.getuid()}/{os.getpid()}/{int(round(time.time()*1000))}"
+    elif platform.system() == 'Windows':
+        memory_prefix = f"{int(round(time.time()*1000))}"
+    else:
+        print("The OS is not supported")
+        sys.exit(0)
 
-    config = Config()
+    config = Config(memory_prefix)
 
     # Setting every parameter
     config.set_project_path(args.workspace, args.name)
