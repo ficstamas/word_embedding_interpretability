@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-workspace="mcmc"
+workspace="workspace/mcmc"
 noises=(0.2 0.5 1.0 2.0 3.0)
 methods=("hellinger" "bhattacharyya")
 proc=20

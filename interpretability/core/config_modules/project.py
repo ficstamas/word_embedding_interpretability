@@ -45,7 +45,7 @@ class Project:
         Generates the file structure
         """
         try:
-            os.mkdir(self.workspace)
+            os.makedirs(self.workspace, exist_ok=True)
             logging.info(f"Workspace created at: {self.workspace}")
         except FileExistsError:
             pass

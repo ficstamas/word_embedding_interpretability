@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-workspace="baseline"
+workspace="workspace/baseline"
 methods=("hellinger" "bhattacharyya")
 proc=20
 cd ../
