@@ -62,10 +62,22 @@ if __name__ == '__main__':
                         help="Calculate interpretability scores")
     parser.add_argument("-accuracy", action='store_true', required=False,
                         help="Calculate accuracy of the model")
+    parser.add_argument("--relaxation", type=int, required=False,
+                        help="Lambda parameter for interpretability calculation. The higher value means more "
+                             "relaxation (Default: 10)")
+
+    # MCMC model params
+    parser.add_argument("--mcmc_acceptance", type=int, required=False,
+                        help="The minimum number of accepted estimation during Metropolis–Hastings algorithm "
+                             "(Default: 200)")
+    parser.add_argument("--mcmc_noise", type=float, required=False,
+                        help="The percent of noise to every semantic category. Calculated based on every semantic "
+                             "categories size (Default: 0.2)")
 
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
-                        model="default", interpretability=False, accuracy=False, load=False, save=False)
+                        model="default", interpretability=False, accuracy=False, load=False, save=False, relaxation=10,
+                        mcmc_acceptance=200, mcmc_noise=0.2)
 
     args = parser.parse_args()
     if platform.system() == 'Linux':
@@ -85,6 +97,8 @@ if __name__ == '__main__':
     config.set_distance(args.distance)
     config.set_kde(args.kde_kernel, args.kde_bandwidth)
     config.project.processes = args.processes
+    config.model.mcmc_acceptance = args.mcmc_acceptance
+    config.model.mcmc_noise = args.mcmc_noise
 
     config.log_config()
 
@@ -111,7 +125,7 @@ if __name__ == '__main__':
         model.save()
     # Interpretability
     if args.interpretability:
-        interpretability.interpretability(config)
+        interpretability.interpretability(config, lamb=args.relaxation)
     # Accuracy
     if args.accuracy:
         accuracy.accuracy(config)

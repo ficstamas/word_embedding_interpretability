@@ -17,6 +17,7 @@ class Config(metaclass=Singleton):
         self.kde = KDE()
         self.project = Project()
         self.data = Data(memory_prefix)
+        self.model = ModelParams()
         # Logging config
         self.logger = logging.getLogger("default")
 
@@ -74,6 +75,7 @@ class Config(metaclass=Singleton):
         log.info(f"{self.distance.name} is going to be used")
         log.info(f"Kernel Density Estimation: kernel={self.kde.kernel}, bandwidth={self.kde.bandwidth}")
         log.info(f"The program is going to use {self.project.processes} processes")
+        log.info(f"MCMC model params {self.model.mcmc_acceptance} acceptance and {self.model.mcmc_noise} noise")
 
     def to_json(self):
         return json.dumps(
@@ -82,7 +84,8 @@ class Config(metaclass=Singleton):
                 "project": self.project.__repr__(),
                 "kde": self.kde.__repr__(),
                 "distance": self.distance.__repr__(),
-                "semantic_categories": self.semantic_categories.__repr__()
+                "semantic_categories": self.semantic_categories.__repr__(),
+                "model_params": self.model.__repr__()
             })
 
     def free(self):

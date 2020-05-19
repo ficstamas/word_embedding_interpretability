@@ -53,7 +53,7 @@ class MCMCModel(DefaultModel):
             if i % config.project.processes == modulus:
                 dimension = w[:, i]
                 # Perturbation
-                estimation = MCMCModel.mcmc(dimension)
+                estimation = MCMCModel.mcmc(dimension, minimum_acceptance=config.model.mcmc_acceptance)
                 # Iterating over the semantic categories
                 for j in range(config.semantic_categories.categories.i2c.__len__()):
                     word_indexes = np.zeros(shape=[w.shape[0], ], dtype=np.bool)
@@ -69,7 +69,7 @@ class MCMCModel(DefaultModel):
                     # Populate Q with out of category word weights
                     _q = dimension[~word_indexes]
 
-                    samples = estimation.rvs(size=_p.shape[0]//3)
+                    samples = estimation.rvs(size=int(round(_p.shape[0]*config.model.mcmc_noise)))
 
                     _p = np.concatenate([_p, np.array(samples)])
                     # calculating distance
