@@ -26,9 +26,11 @@ class Config(metaclass=Singleton):
         self.embedding.dense = dense
         self.embedding.lines_to_read = lines_to_read
 
-    def set_semantic_categories(self, path: str, drop_method: Literal['random', 'category_center'],
+    def set_semantic_categories(self, path: str, load_method: Literal['semcat', 'old_semcat'],
+                                drop_method: Literal['random', 'category_center'],
                                 drop_rate: float, seed: int):
         self.semantic_categories.path = path
+        self.semantic_categories.load_method = load_method
         self.semantic_categories.drop_method = drop_method
         self.semantic_categories.drop_rate = drop_rate
         self.semantic_categories.seed = seed

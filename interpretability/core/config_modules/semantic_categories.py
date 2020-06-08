@@ -4,6 +4,7 @@ import json
 class SemanticCategories:
     def __init__(self):
         self.path = None
+        self.load_method = None
         self.drop_method = None
         self.drop_rate = None
         self.seed = None
@@ -16,6 +17,7 @@ class SemanticCategories:
                 "drop_method": self.drop_method,
                 "drop_rate": self.drop_rate,
                 "seed": self.seed,
+                "load_method": self.load_method,
             })
 
     def __str__(self):

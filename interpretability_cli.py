@@ -4,6 +4,7 @@ from interpretability.core.config import Config
 from models import *
 from interpretability.loader.embedding import Embedding as EmbeddingObject
 from interpretability.loader.semcat import semcat_reader
+from interpretability.loader.old_semcat import read as old_semcat_reader
 from validation import interpretability, accuracy
 import json
 import os
@@ -25,6 +26,9 @@ if __name__ == '__main__':
     # Semantic categories
     parser.add_argument("--smc_path", type=str,
                         help="Path to the Semantic Categories directory")
+    parser.add_argument("--smc_loader", type=str, required=False,
+                        help="The way of the semantic categories are going to be loaded. Available: "
+                             "['semcat', 'old_semcat']. Default: 'semcat'")
     parser.add_argument("--smc_method", type=str, required=False,
                         help="Method to drop words from semantic categories. Available: ['random', 'category_center']")
     parser.add_argument("--smc_rate", type=float, required=False,
@@ -77,9 +81,11 @@ if __name__ == '__main__':
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
                         model="default", interpretability=False, accuracy=False, load=False, save=False, relaxation=10,
-                        mcmc_acceptance=200, mcmc_noise=0.2)
+                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat')
 
     args = parser.parse_args()
+
+    # Setting up shared memory object prefixes in a platform dependent way
     if platform.system() == 'Linux':
         memory_prefix = f"{os.getuid()}_{os.getpid()}_{int(round(time.time()*1000))}_"
     elif platform.system() == 'Windows':
@@ -93,7 +99,7 @@ if __name__ == '__main__':
     # Setting every parameter
     config.set_project_path(args.workspace, args.name)
     config.set_embedding(args.embedding_path, args.dense, args.lines_to_read)
-    config.set_semantic_categories(args.smc_path, args.smc_method, args.smc_rate, args.seed)
+    config.set_semantic_categories(args.smc_path, args.smc_loader, args.smc_method, args.smc_rate, args.seed)
     config.set_distance(args.distance)
     config.set_kde(args.kde_kernel, args.kde_bandwidth)
     config.project.processes = args.processes
@@ -105,7 +111,21 @@ if __name__ == '__main__':
     # Loading
     embedding = EmbeddingObject(config)
     config.embedding.embedding = embedding
-    semcat = semcat_reader(config)
+
+    semcat = None
+    if config.semantic_categories.load_method == "semcat":
+        semcat = semcat_reader(config)
+    elif config.semantic_categories.load_method == "old_semcat":
+        params = {
+            "random": config.semantic_categories.drop_method == "random",
+            "seed": config.semantic_categories.seed,
+            "percent": config.semantic_categories.drop_rate,
+            "center": config.semantic_categories.drop_method == "category_center"
+        }
+        semcat = old_semcat_reader(config.semantic_categories.path, config, embedding, params)
+    else:
+        config.logger.error("Invalid loader type for semantic categories")
+        sys.exit(0)
     config.semantic_categories.categories = semcat
 
     # Models
