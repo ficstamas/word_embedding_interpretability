@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 workspace="workspace/tsd"
-methods=("hellinger" "bhattacharyya")
+methods=("hellinger_normal" "bhattacharyya_normal" "hellinger" "bhattacharyya")
 proc=30
 number_of_words=50000
 glove_path='../shared/embeddings/glove/dense/glove.6B.300d.txt'
