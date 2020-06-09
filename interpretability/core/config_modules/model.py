@@ -1,3 +1,5 @@
+import json
+
 class ModelParams:
     def __init__(self):
         self.mcmc_acceptance = 200
