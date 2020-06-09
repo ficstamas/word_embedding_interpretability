@@ -10,7 +10,6 @@ def interpretability(config: Config, raw=False, lamb=10):
     :param config:
     :param raw: If True calculates the interpretability of the raw embedding
     :param lamb: Relaxation parameter
-    :param processes: Number of processes to use
     :return:
     """
     config.logger.info("Calculating interpretability...")

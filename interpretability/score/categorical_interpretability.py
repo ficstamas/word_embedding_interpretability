@@ -73,8 +73,16 @@ def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: Me
     return IS_i
 
 
-# TODO Linux fix
 def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, proc=5, lamb=5):
+    """
+    Calculating interpretability scores
+    :param config: Config object
+    :param embedding_memory: Memory info about the embedding
+    :param distance_memory: Memory info about the distance matrix
+    :param proc: Number of processes to use
+    :param lamb: the number of lambda to compute from 1
+    :return:
+    """
     IS_i = []
     number_of_processes = min(proc, lamb)
     pool = multiprocessing.Pool(processes=number_of_processes)

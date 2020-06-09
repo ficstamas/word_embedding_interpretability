@@ -1,4 +1,7 @@
 class MemoryInfo:
+    """
+    A Wrapper to store SharedMemory object properties
+    """
     def __init__(self):
         self.name = ""
         self.shape = None
