@@ -8,6 +8,8 @@ Every dependency can be found in the [requirements.txt](requirements.txt).<br>
 `pip install -r requirements.txt`
 
 # TSD recreation of results
+The paper which was submitted to the **23rd International Conference on Text, Speech and Dialogue** conference is available [here](docs/tsd_paper.pdf)
+
 Glove can be downloaded [here](http://nlp.stanford.edu/data/glove.6B.zip) and the SemCat dataset is available [here](https://github.com/avaapm/SEMCATdataset2018).
 
 Run [tsd_experiment.sh](experiments/tsd_expriments.sh) after changing the _glove_path_ and _semcat_path_ variables. Furthermore change the _proc_ variable according to your CPU cores (Default: 30), but it is not going to spawn/fork more processes than the available number of physical cores.
