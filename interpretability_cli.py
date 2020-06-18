@@ -5,6 +5,7 @@ from models import *
 from interpretability.loader.embedding import Embedding as EmbeddingObject
 from interpretability.loader.semcat import semcat_reader
 from interpretability.loader.old_semcat import read as old_semcat_reader
+from interpretability.loader.semcor import read as semcor_reader
 from validation import interpretability, accuracy
 import json
 import os
@@ -30,7 +31,7 @@ if __name__ == '__main__':
                         help="Path to the Semantic Categories directory")
     parser.add_argument("--smc_loader", type=str, required=False,
                         help="The way of the semantic categories are going to be loaded. Available: "
-                             "['semcat', 'old_semcat']. Default: 'semcat'")
+                             "['semcat', 'old_semcat', 'semcor']. Default: 'semcat'")
     parser.add_argument("--smc_method", type=str, required=False,
                         help="Method to drop words from semantic categories. Available: ['random', 'category_center']")
     parser.add_argument("--smc_rate", type=float, required=False,
@@ -126,6 +127,9 @@ if __name__ == '__main__':
             "center": config.semantic_categories.drop_method == "category_center"
         }
         semcat = old_semcat_reader(config.semantic_categories.path, config, embedding, params)
+    elif config.semantic_categories.load_method == "semcor":
+        semcat, word_vector_labels = semcor_reader(config.semantic_categories.path, config)
+        config.embedding.embedding._allocate_labels(word_vector_labels)
     else:
         config.logger.error("Invalid loader type for semantic categories")
         sys.exit(0)

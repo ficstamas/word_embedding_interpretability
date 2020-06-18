@@ -10,6 +10,10 @@ __all__ = ["Config"]
 
 class Config(metaclass=Singleton):
     def __init__(self, memory_prefix: str):
+        """
+
+        :rtype:
+        """
         self.memory_prefix = memory_prefix
         self.embedding = Embedding()
         self.semantic_categories = SemanticCategories()
@@ -26,7 +30,7 @@ class Config(metaclass=Singleton):
         self.embedding.dense = dense
         self.embedding.lines_to_read = lines_to_read
 
-    def set_semantic_categories(self, path: str, load_method: Literal['semcat', 'old_semcat'],
+    def set_semantic_categories(self, path: str, load_method: Literal['semcat', 'old_semcat', 'semcor'],
                                 drop_method: Literal['random', 'category_center'],
                                 drop_rate: float, seed: int):
         self.semantic_categories.path = path
