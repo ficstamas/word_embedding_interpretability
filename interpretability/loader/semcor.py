@@ -58,9 +58,10 @@ def read(path: str, config: Config) -> (SemCat, list):
                 if lexname in vocab:
                     vocab[lexname].add(data[2])
                 else:
-                    eval_data[lexname] = set()
-                    vocab[lexname] = set()
-                    vocab[lexname].add(data[2])
+                    if lexname != 'adj.ppl':
+                        eval_data[lexname] = set()
+                        vocab[lexname] = set()
+                        vocab[lexname].add(data[2])
         word_vector_indexes[id] = data[2]
         id += 1
     # Loading eval data
@@ -68,8 +69,9 @@ def read(path: str, config: Config) -> (SemCat, list):
         if data[1].__len__() != 0:
             for lexname in data[1]:
                 lexname: str
-                id_stripped = '.'.join(data[2].split('.')[1:])
-                eval_data[lexname].add(id_stripped)
+                if lexname != 'adj.ppl':
+                    id_stripped = '.'.join(data[2].split('.')[1:])
+                    eval_data[lexname].add(id_stripped)
 
     id = 0
     # category to index
