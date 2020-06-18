@@ -21,6 +21,8 @@ if __name__ == '__main__':
                         help="Path to the embedding file")
     parser.add_argument("-dense", action='store_true', required=False,
                         help="Mark dense embeddings")
+    parser.add_argument("-numpy", action='store_true', required=False,
+                        help="Use if the embedding is stored in npy or npz format")
     parser.add_argument("--lines_to_read", type=int, required=False,
                         help="Lines to read from the embedding, to read the whole embedding set it to -1. (Default: -1)")
     # Semantic categories
@@ -81,7 +83,7 @@ if __name__ == '__main__':
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
                         model="default", interpretability=False, accuracy=False, load=False, save=False, relaxation=10,
-                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat')
+                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False)
 
     args = parser.parse_args()
 
@@ -99,6 +101,7 @@ if __name__ == '__main__':
     # Setting every parameter
     config.set_project_path(args.workspace, args.name)
     config.set_embedding(args.embedding_path, args.dense, args.lines_to_read)
+    config.embedding.numpy = args.numpy
     config.set_semantic_categories(args.smc_path, args.smc_loader, args.smc_method, args.smc_rate, args.seed)
     config.set_distance(args.distance)
     config.set_kde(args.kde_kernel, args.kde_bandwidth)

@@ -35,10 +35,13 @@ class Embedding(object):
         self.w2i_memory_name = config.memory_prefix+"w2i"
         self.w2i_memory_size = 0
 
-        if config.embedding.dense:
-            self.load_dense_embeddings(config.embedding.path, max_words=config.embedding.lines_to_read)
+        if config.embedding.numpy:
+            self.load_numpy(config.embedding.path)
         else:
-            self.load_sparse_embeddings(config.embedding.path, max_words=config.embedding.lines_to_read)
+            if config.embedding.dense:
+                self.load_dense_embeddings(config.embedding.path, max_words=config.embedding.lines_to_read)
+            else:
+                self.load_sparse_embeddings(config.embedding.path, max_words=config.embedding.lines_to_read)
 
     def load_dense_embeddings(self, path: str, max_words=-1):
         """
@@ -81,36 +84,10 @@ class Embedding(object):
 
         W = np.array(data)
 
-        memory = SharedMemory(self.embedding_memory_name, create=True, size=W.nbytes)
-
-        buf = np.ndarray(W.shape, dtype=W.dtype, buffer=memory.buf)
-        self.embedding_memory_dtype = W.dtype
-        self.embedding_memory_shape = W.shape
-        self.embedding_memory_size = W.nbytes
-        buf[:, :] = W[:, :]
-        del W
-
         i2w = dict(enumerate(words))
         w2i = {v: k for k, v in i2w.items()}
 
-        i2w_byte = array.array('B')
-        i2w_byte.frombytes(json.dumps(i2w).encode("utf8"))
-        w2i_byte = array.array('B')
-        w2i_byte.frombytes(json.dumps(w2i).encode("utf8"))
-
-        i2w_memory = SharedMemory(self.i2w_memory_name, create=True, size=i2w_byte.__len__())
-        i2w_memory.buf[:] = i2w_byte[:]
-        self.i2w_memory_size = i2w_byte.__len__()
-
-        w2i_memory = SharedMemory(self.w2i_memory_name, create=True, size=w2i_byte.__len__())
-        w2i_memory.buf[:] = w2i_byte[:]
-        self.w2i_memory_size = w2i_byte.__len__()
-
-        # Adding shareables to list to preserve one view and prevent them them from garbage collection
-        self._memories.append(i2w_memory)
-        self._memories.append(w2i_memory)
-        self._memories.append(memory)
-        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size/1024/1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
+        self.memory_allocation(W, i2w, w2i)
 
     def load_sparse_embeddings(self, path, max_words=-1):
         """
@@ -152,16 +129,34 @@ class Embedding(object):
         w2i = {w: i for i, w in i2w.items()}
 
         sparse = sp.csr_matrix((data, indices, indptr), shape=(len(indptr) - 1, i + 1)).toarray()
+        self.memory_allocation(sparse, i2w, w2i)
 
+    def load_numpy(self, path: str):
+        W = None
+        if self.config.embedding.dense:
+            W = np.load(path)
+        else:
+            W = sp.load_npz(path)
+            W = W.toarray()
+        self.memory_allocation(W, {}, {})
+
+    def memory_allocation(self, matrix, i2w, w2i):
+        """
+        Allocates shared memory objects
+        :param matrix:
+        :param i2w:
+        :param w2i:
+        :return:
+        """
         # Creating shared memory objects
         memory = SharedMemory(self.embedding_memory_name, create=True, size=sparse.nbytes)
 
-        buf = np.ndarray(sparse.shape, dtype=sparse.dtype, buffer=memory.buf)
-        self.embedding_memory_dtype = sparse.dtype
-        self.embedding_memory_shape = sparse.shape
-        self.embedding_memory_size = sparse.nbytes
-        buf[:, :] = sparse[:, :]
-        del sparse
+        buf = np.ndarray(matrix.shape, dtype=matrix.dtype, buffer=memory.buf)
+        self.embedding_memory_dtype = matrix.dtype
+        self.embedding_memory_shape = matrix.shape
+        self.embedding_memory_size = matrix.nbytes
+        buf[:, :] = matrix[:, :]
+        del matrix
 
         i2w_byte = array.array('B')
         i2w_byte.frombytes(json.dumps(i2w).encode("utf8"))
@@ -176,11 +171,12 @@ class Embedding(object):
         w2i_memory.buf[:] = w2i_byte[:]
         self.w2i_memory_size = w2i_byte.__len__()
 
-        # Adding shareables to list to preserve one view and prevent them them from garbage collection
+        # Adding share ables to list to preserve one view and prevent them them from garbage collection
         self._memories.append(i2w_memory)
         self._memories.append(w2i_memory)
         self._memories.append(memory)
-        self.config.logger.info(f"Embedding in memory: {self.embedding_memory_size/1024/1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
+        self.config.logger.info(
+            f"Embedding in memory: {self.embedding_memory_size / 1024 / 1024:.2f} Mbytes ({self.embedding_memory_size} bytes)")
 
     @classmethod
     def buff_to_dict(cls, shr: SharedMemory, size: int) -> dict:

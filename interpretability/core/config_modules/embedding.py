@@ -6,6 +6,7 @@ class Embedding:
     def __init__(self):
         self.path = None
         self.dense = None
+        self.numpy = None
         self.lines_to_read = None
         self._object = None
 
@@ -26,6 +27,7 @@ class Embedding:
             {
                 "path": self.path,
                 "dense": self.dense,
+                "numpy": self.numpy,
                 "lines_to_read": self.lines_to_read,
             })
 
