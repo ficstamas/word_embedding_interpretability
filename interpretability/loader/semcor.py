@@ -81,4 +81,4 @@ def read(path: str, config: Config) -> (SemCat, list):
     # index to category
     i2c = {v: k for k, v in c2i.items()}
 
-    return SemCat(vocab, c2i, i2c, {}), word_vector_indexes
+    return SemCat(vocab, c2i, i2c, eval_data), word_vector_indexes
