@@ -199,6 +199,8 @@ class DefaultModel(Model):
                             word_indexes[w2i[word]] = True
                         except KeyError:
                             continue
+                        except IndexError:
+                            continue
 
                     # Populate P with category word weights
                     _p = dimension[word_indexes]
