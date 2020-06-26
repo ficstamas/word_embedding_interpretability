@@ -3,6 +3,7 @@ from interpretability.loader.semcor import Semcor
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
 import tqdm
+import os
 
 
 def accuracy(config: Config, relaxation=1):
@@ -23,20 +24,24 @@ def accuracy(config: Config, relaxation=1):
 
     for lexname in tqdm.tqdm(semcor.dropped_words):
         for token in semcor.dropped_words[lexname]:
-            for i in semcor.word_vector_tokens:
-                word = semcor.word_vector_tokens[i]
-                if word == token:
-                    word_vector = np.array([w[i, :].T])
-                    lex_indexes = np.array([np.arange(word_vector.shape[1])])
-                    pairs = np.append(word_vector, lex_indexes, axis=0)
-                    sorted_word_vector = pairs[:, pairs[0, :].argsort()]
-                    for j in range(1, relaxation + 1):
-                        element = sorted_word_vector[:, -j]
-                        if int(element[1]) == semcor.c2i[i2w[str(i)]]:
-                            score.append(1/j)
-                        else:
-                            score.append(0)
+            try:
+                for i in semcor.word_vector_tokens:
+                    word = semcor.word_vector_tokens[i]
+                    if word == token:
+                        word_vector = np.array([w[i, :].T])
+                        lex_indexes = np.array([np.arange(word_vector.shape[1])])
+                        pairs = np.append(word_vector, lex_indexes, axis=0)
+                        sorted_word_vector = pairs[:, pairs[0, :].argsort()]
+                        for j in range(1, relaxation + 1):
+                            element = sorted_word_vector[:, -j]
+                            if i2w[str(i)] != '<unknown>' and int(element[1]) == semcor.c2i[i2w[str(i)]]:
+                                score.append(1 / j)
+                            else:
+                                score.append(0)
+            except IndexError:
+                continue
 
     config.logger.info(np.average(score))
-
-
+    fd = open(os.path.join(config.project.results, f"accuracy@{relaxation}.txt"), mode='w')
+    fd.write(str(np.average(score)))
+    fd.close()

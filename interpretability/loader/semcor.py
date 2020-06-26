@@ -69,7 +69,11 @@ def read(path: str, config: Config) -> (Semcor, list):
                         eval_data[lexname] = set()
                         vocab[lexname] = set()
                         vocab[lexname].add(data[4])
+                    else:
+                        continue
         word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
+        if word_vector_indexes[id] == 'adj.ppl':
+            word_vector_indexes[id] = '<unknown>'
         word_vector_tokens[id] = data[4]
         id += 1
     # Loading eval data

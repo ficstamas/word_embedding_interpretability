@@ -158,8 +158,9 @@ if __name__ == '__main__':
     # Accuracy
     if args.accuracy == 'word_retrieval_test':
         word_retrieval_test.accuracy(config)
-    elif args.accuracy == 'accuracy':
-        accuracy.accuracy(config)
+    elif args.accuracy.startswith('accuracy'):
+        relax = int(args.accuracy.split('@')[-1])
+        accuracy.accuracy(config, relax)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)
