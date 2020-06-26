@@ -6,7 +6,7 @@ from interpretability.loader.embedding import Embedding as EmbeddingObject
 from interpretability.loader.semcat import semcat_reader
 from interpretability.loader.old_semcat import read as old_semcat_reader
 from interpretability.loader.semcor import read as semcor_reader
-from validation import interpretability, accuracy
+from validation import interpretability, word_retrieval_test, accuracy
 import json
 import os
 import time
@@ -67,8 +67,8 @@ if __name__ == '__main__':
                         help="Calculate interpretability scores")
     parser.add_argument("-interpretability", action='store_true', required=False,
                         help="Calculate interpretability scores")
-    parser.add_argument("-accuracy", action='store_true', required=False,
-                        help="Calculate accuracy of the model")
+    parser.add_argument("--accuracy", type=str, required=False,
+                        help="Calculate accuracy of the model. ['word_retrieval_test', 'accuracy']")
     parser.add_argument("--relaxation", type=int, required=False,
                         help="Lambda parameter for interpretability calculation. The higher value means more "
                              "relaxation (Default: 10)")
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
-                        model="default", interpretability=False, accuracy=False, load=False, save=False, relaxation=10,
+                        model="default", interpretability=False, accuracy='word_retrieval_test', load=False, save=False, relaxation=10,
                         mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False)
 
     args = parser.parse_args()
@@ -141,6 +141,8 @@ if __name__ == '__main__':
         model = DefaultModel()
     elif args.model == "mcmc":
         model = MCMCModel()
+    elif args.model == "contextual":
+        model = ContextualModel()
 
     # Init values
     if args.load:
@@ -154,7 +156,9 @@ if __name__ == '__main__':
     if args.interpretability:
         interpretability.interpretability(config, lamb=args.relaxation)
     # Accuracy
-    if args.accuracy:
+    if args.accuracy == 'word_retrieval_test':
+        word_retrieval_test.accuracy(config)
+    elif args.accuracy == 'accuracy':
         accuracy.accuracy(config)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:

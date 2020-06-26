@@ -4,6 +4,12 @@ from interpretability.loader.semcat import SemCat
 from interpretability.core.config import Config
 
 
+class Semcor(SemCat):
+    def __init__(self, vocab, c2i, i2c, eval_data, word_vector_tokens):
+        super(Semcor, self).__init__(vocab, c2i, i2c, eval_data)
+        self.word_vector_tokens = word_vector_tokens
+
+
 class SemcorReader:
     @staticmethod
     def get_labels(key_file):
@@ -40,7 +46,7 @@ class SemcorReader:
                 yield synset_labels, lexname_labels, token_id, lemma, token.text.replace('-', '_')
 
 
-def read(path: str, config: Config) -> (SemCat, list):
+def read(path: str, config: Config) -> (Semcor, list):
     """
     Loading SemCor
     :param path:
@@ -49,29 +55,30 @@ def read(path: str, config: Config) -> (SemCat, list):
     vocab = {}
     c2i, i2c = {}, {}
     word_vector_indexes = {}
+    word_vector_tokens = {}
     eval_data = {}
     id = 0
     # Loading semcor
     for data in SemcorReader().get_tokens(path):
         if data[1].__len__() != 0:
-            for lexname in data[1]:
+            for lexname in set(data[1]):
                 if lexname in vocab:
                     vocab[lexname].add(data[2])
                 else:
                     if lexname != 'adj.ppl':
                         eval_data[lexname] = set()
                         vocab[lexname] = set()
-                        vocab[lexname].add(data[2])
-        word_vector_indexes[id] = data[2]
+                        vocab[lexname].add(data[4])
+        word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
+        word_vector_tokens[id] = data[4]
         id += 1
     # Loading eval data
     for data in SemcorReader().get_tokens(path.replace("data.xml", "eval.data.xml")):
         if data[1].__len__() != 0:
-            for lexname in data[1]:
+            for lexname in set(data[1]):
                 lexname: str
                 if lexname != 'adj.ppl':
-                    id_stripped = '.'.join(data[2].split('.')[1:])
-                    eval_data[lexname].add(id_stripped)
+                    eval_data[lexname].add(data[4])
 
     id = 0
     # category to index
@@ -80,5 +87,5 @@ def read(path: str, config: Config) -> (SemCat, list):
         id += 1
     # index to category
     i2c = {v: k for k, v in c2i.items()}
-
-    return SemCat(vocab, c2i, i2c, eval_data), word_vector_indexes
+    config.logger.info(f"")
+    return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes

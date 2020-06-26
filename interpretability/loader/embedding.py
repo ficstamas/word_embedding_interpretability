@@ -136,7 +136,9 @@ class Embedding(object):
         else:
             W = sp.load_npz(path)
             W = W.toarray()
-        self._allocate_embedding(W[:self.config.embedding.lines_to_read]
+
+        # TODO remove restriction
+        self._allocate_embedding(W[:self.config.embedding.lines_to_read, :5]
                                  if self.config.embedding.lines_to_read != -1 else W)
 
     def memory_allocation(self, matrix, i2w):
