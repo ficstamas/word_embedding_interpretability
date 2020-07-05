@@ -63,7 +63,7 @@ def read(path: str, config: Config) -> (Semcor, list):
         if data[1].__len__() != 0:
             for lexname in set(data[1]):
                 if lexname in vocab:
-                    vocab[lexname].add(data[2])
+                    vocab[lexname].add(data[4])
                 else:
                     if lexname != 'adj.ppl':
                         eval_data[lexname] = set()
