@@ -58,12 +58,12 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
             if test_weights is None and eval_vector_labels[i] != '<unknown>':
                 sw = transformed_space[i, :]
                 test_weights = sw[np.newaxis, :]
-                test_labels.append(eval_vector_labels[i])
+                test_labels.append(semcor.c2i[eval_vector_labels[i]])
                 j += 1
             else:
                 if eval_vector_labels[i] != '<unknown>':
                     test_weights = np.concatenate([test_weights, transformed_space[np.newaxis, i, :]], axis=0)
-                    test_labels.append(eval_vector_labels[i])
+                    test_labels.append(semcor.c2i[eval_vector_labels[i]])
                     j += 1
 
         for i in tqdm.trange(test_weights.shape[0]):
