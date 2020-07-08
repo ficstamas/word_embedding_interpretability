@@ -7,7 +7,7 @@ from zipfile import ZipFile
 from multiprocessing.shared_memory import SharedMemory
 import json
 import array
-from interpretability.core.config import Config
+# from interpretability.core.config import Config
 
 
 __all__ = ["Embedding"]
@@ -19,7 +19,7 @@ class Embedding(object):
     Objects are assumed to be located in the rows.
     """
 
-    def __init__(self, config: Config):
+    def __init__(self, config):
         self.config = config
         self._memories = []
         # Shared memory object

@@ -57,6 +57,7 @@ def read(path: str, config: Config) -> (Semcor, list):
     word_vector_indexes = {}
     word_vector_tokens = {}
     eval_data = {}
+    eval_vector_indexes = {}
     id = 0
     # Loading semcor
     for data in SemcorReader().get_tokens(path):
@@ -74,15 +75,21 @@ def read(path: str, config: Config) -> (Semcor, list):
         word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
         if word_vector_indexes[id] == 'adj.ppl':
             word_vector_indexes[id] = '<unknown>'
-        word_vector_tokens[id] = data[4]
+        word_vector_tokens[id] = data[1]
         id += 1
+
+    id = 0
     # Loading eval data
-    for data in SemcorReader().get_tokens(path.replace("data.xml", "eval.data.xml")):
+    for data in SemcorReader().get_tokens(config.semantic_categories.test_words_path):
         if data[1].__len__() != 0:
             for lexname in set(data[1]):
                 lexname: str
                 if lexname != 'adj.ppl':
                     eval_data[lexname].add(data[4])
+        eval_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
+        if eval_vector_indexes[id] == 'adj.ppl':
+            eval_vector_indexes[id] = '<unknown>'
+        id += 1
 
     id = 0
     # category to index
@@ -92,4 +99,4 @@ def read(path: str, config: Config) -> (Semcor, list):
     # index to category
     i2c = {v: k for k, v in c2i.items()}
     config.logger.info(f"")
-    return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes
+    return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes, eval_vector_indexes

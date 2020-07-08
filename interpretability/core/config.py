@@ -9,21 +9,18 @@ __all__ = ["Config"]
 
 
 class Config(metaclass=Singleton):
-    def __init__(self, memory_prefix: str):
-        """
-
-        :rtype:
-        """
-        self.memory_prefix = memory_prefix
-        self.embedding = Embedding()
-        self.semantic_categories = SemanticCategories()
-        self.distance = Distance()
-        self.kde = KDE()
-        self.project = Project()
-        self.data = Data(memory_prefix)
-        self.model = ModelParams()
-        # Logging config
-        self.logger = logging.getLogger("default")
+    def __init__(self, *args, **kwargs):
+        if 'access' not in kwargs or 'access' in kwargs and not kwargs['access']:
+            self.memory_prefix = kwargs['memory_prefix']
+            self.embedding = Embedding()
+            self.semantic_categories = SemanticCategories()
+            self.distance = Distance()
+            self.kde = KDE()
+            self.project = Project()
+            self.data = Data(memory_prefix)
+            self.model = ModelParams()
+            # Logging config
+            self.logger = logging.getLogger("default")
 
     def set_embedding(self, path: str, dense: bool, lines_to_read: int):
         self.embedding.path = path

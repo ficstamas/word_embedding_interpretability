@@ -2,31 +2,45 @@ from interpretability.core.config import Config
 from interpretability.loader.semcor import Semcor
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
+from sklearn.preprocessing import StandardScaler, Normalizer
 import tqdm
 import os
+import sys
 
 
-def accuracy(config: Config, relaxation=1):
+def accuracy(eval_vector_labels: dict, config=Config(access=True), relaxation=1):
     embedding = config.embedding.embedding
-    weights_mem = SharedMemory(config.data.transformed_space)
-    w = np.ndarray(shape=config.data.transformed_space_shape,
-                   buffer=weights_mem.buf)
+    distance_mem = SharedMemory(config.data.distance_matrix)
+    distance_matrix = np.ndarray(shape=config.data.distance_matrix_shape,
+                                 buffer=distance_mem.buf)
 
-    # index to lexname
-    i2w_mem = SharedMemory(embedding.i2w_memory_name)
-    i2w = embedding.buff_to_dict(i2w_mem, embedding.i2w_memory_size)
+    distances = distance_matrix[:, :, 0]
+    signs = distance_matrix[:, :, 1]
 
+    try:
+        config.data.load_test_word_weights()
+    except NotImplementedError as e:
+        config.logger.error("Try other file type for the test word weight file!\n {0}".format(e))
+        sys.exit(1)
     semcor: Semcor
     semcor = config.semantic_categories.categories
 
-    score = []
+    # performing the usual operations
+    config.logger.info("Performing L1 normalization...")
 
-    validation_vocab = list()
-    validation_label = list()
-    for lexname in semcor.dropped_words:
-        for token in semcor.dropped_words[lexname]:
-            validation_vocab.append(token)
-            validation_label.append(semcor.c2i[lexname])
+    normalized = Normalizer('l1').transform(distances.T).T
+
+    config.logger.info("Performing sign correction...")
+
+    sign_corrected = normalized * signs
+
+    config.logger.info("Performing standard scaling...")
+
+    scaled = StandardScaler(copy=True, with_mean=True, with_std=True).fit_transform(config.data.test_word_weights)
+
+    transformed_space = scaled.dot(sign_corrected)
+
+    config.logger.info("Transformed space calculated!")
 
     test_weights = None
     test_labels = []
@@ -35,25 +49,22 @@ def accuracy(config: Config, relaxation=1):
     if not os.path.exists(os.path.join(config.project.results, "accuracy.npz")):
         config.logger.info("Calculating ordered accuracy matrix...")
         j = 0
-        for i in tqdm.trange(w.shape[0]):
-            if i2w[str(i)] == '<unknown>':
+        for i in tqdm.trange(transformed_space.shape[0]):
+            if eval_vector_labels[i] == '<unknown>':
                 continue
-            if test_weights is None and semcor.word_vector_tokens[i] in validation_vocab:
-                k = validation_vocab.index(semcor.word_vector_tokens[i])
-                sw = w[i, :]
+            if test_weights is None and eval_vector_labels[i] != '<unknown>':
+                sw = transformed_space[i, :]
                 test_weights = sw[np.newaxis, :]
-                # test_labels[j] = [validation_label[k], validation_vocab[k]]
-                test_labels.append(validation_label[k])
+                test_labels.append(eval_vector_labels[i])
                 j += 1
             else:
-                if semcor.word_vector_tokens[i] in validation_vocab:
-                    k = validation_vocab.index(semcor.word_vector_tokens[i])
-                    test_weights = np.concatenate([test_weights, w[np.newaxis, i, :]], axis=0)
-                    test_labels.append(validation_label[k])
+                if eval_vector_labels[i] != '<unknown>':
+                    test_weights = np.concatenate([test_weights, transformed_space[np.newaxis, i, :]], axis=0)
+                    test_labels.append(eval_vector_labels[i])
                     j += 1
 
         for i in tqdm.trange(test_weights.shape[0]):
-            word_vector = np.array([w[i, :].T])
+            word_vector = np.array([test_weights[i, :].T])
             lex_indexes = np.array([np.arange(word_vector.shape[1])])
             pairs = np.append(word_vector, lex_indexes, axis=0)
             sorted_word_vector = pairs[:, pairs[0, :].argsort()]
@@ -85,29 +96,3 @@ def accuracy(config: Config, relaxation=1):
     fd = open(os.path.join(config.project.results, f"accuracy.txt"), mode='a')
     fd.write(f"{np.mean(score)}@{relaxation}\n")
     fd.close()
-
-    # for lexname in tqdm.tqdm(semcor.dropped_words):
-    #     for token in semcor.dropped_words[lexname]:
-    #         try:
-    #             for i in semcor.word_vector_tokens:
-    #                 word = semcor.word_vector_tokens[i]
-    #                 if word == token:
-    #                     word_vector = np.array([w[i, :].T])
-    #                     lex_indexes = np.array([np.arange(word_vector.shape[1])])
-    #                     pairs = np.append(word_vector, lex_indexes, axis=0)
-    #                     sorted_word_vector = pairs[:, pairs[0, :].argsort()]
-    #                     appended = False
-    #                     for j in range(1, relaxation + 1):
-    #                         element = sorted_word_vector[:, -j]
-    #                         if i2w[str(i)] != '<unknown>' and int(element[1]) == semcor.c2i[i2w[str(i)]]:
-    #                             score.append(1 / j)
-    #                             appended = True
-    #                     if not appended:
-    #                         score.append(0)
-    #         except IndexError:
-    #             continue
-
-    # config.logger.info(np.average(score))
-    # fd = open(os.path.join(config.project.results, f"accuracy@{relaxation}.txt"), mode='w')
-    # fd.write(str(np.average(score)))
-    # fd.close()

@@ -1,6 +1,8 @@
 import json
 from multiprocessing.shared_memory import SharedMemory
 import numpy as np
+import scipy.sparse as sp
+import sys
 
 
 class Data:
@@ -11,6 +13,8 @@ class Data:
         self.transformed_space_shape = None
         self.transformed_space_distance_matrix = memory_prefix+"transformed_space_distance_matrix"
         self.transformed_space_distance_matrix_shape = None
+        self.test_word_weights = None
+        self.test_word_weights_path = None
         self._memories = []
 
     def free(self):
@@ -27,11 +31,22 @@ class Data:
         del matrix
         self._memories.append(memory)
 
+    def load_test_word_weights(self):
+        self.test_word_weights_path: str
+        if self.test_word_weights_path.endswith(".npy"):
+            self.test_word_weights = np.load(self.test_word_weights_path)
+        elif self.test_word_weights_path.endswith(".npz"):
+            self.test_word_weights = sp.load_npz(self.test_word_weights_path)
+            self.test_word_weights = self.test_word_weights.toarray()
+        else:
+            raise NotImplementedError("The file type is not supported!")
+
     def to_json(self) -> str:
         return json.dumps({
             "distance_matrix": self.distance_matrix,
             "transformed_space": self.transformed_space,
             "transformed_space_distance_matrix": self.transformed_space_distance_matrix,
+            "test_word_weights_path": self.test_word_weights_path
         })
 
     def __str__(self):

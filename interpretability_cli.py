@@ -72,6 +72,10 @@ if __name__ == '__main__':
     parser.add_argument("--relaxation", type=int, required=False,
                         help="Lambda parameter for interpretability calculation. The higher value means more "
                              "relaxation (Default: 10)")
+    parser.add_argument("--test_words", type=str, required=False,
+                        help="Path to the test words")
+    parser.add_argument("--test_words_weights", type=str, required=False,
+                        help="Path to NumPy array which contains the weights for the test words")
 
     # MCMC model params
     parser.add_argument("--mcmc_acceptance", type=int, required=False,
@@ -84,7 +88,7 @@ if __name__ == '__main__':
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
                         model="default", interpretability=False, accuracy='word_retrieval_test', load=False, save=False, relaxation=10,
-                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False)
+                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False, test_word_weights=None)
 
     args = parser.parse_args()
 
@@ -109,6 +113,8 @@ if __name__ == '__main__':
     config.project.processes = args.processes
     config.model.mcmc_acceptance = args.mcmc_acceptance
     config.model.mcmc_noise = args.mcmc_noise
+    config.data.test_word_weights_path = args.test_words_weights
+    config.semantic_categories.test_words_path = args.test_words
 
     config.log_config()
 
@@ -117,6 +123,7 @@ if __name__ == '__main__':
     config.embedding.embedding = embedding
 
     semcat = None
+    eval_vector_labels = None
     if config.semantic_categories.load_method == "semcat":
         semcat = semcat_reader(config)
     elif config.semantic_categories.load_method == "old_semcat":
@@ -128,7 +135,7 @@ if __name__ == '__main__':
         }
         semcat = old_semcat_reader(config.semantic_categories.path, config, embedding, params)
     elif config.semantic_categories.load_method == "semcor":
-        semcat, word_vector_labels = semcor_reader(config.semantic_categories.path, config)
+        semcat, word_vector_labels, eval_vector_labels = semcor_reader(config.semantic_categories.path, config)
         config.embedding.embedding._allocate_labels(word_vector_labels)
     else:
         config.logger.error("Invalid loader type for semantic categories")
@@ -160,7 +167,7 @@ if __name__ == '__main__':
         word_retrieval_test.accuracy(config)
     elif args.accuracy.startswith('accuracy'):
         relax = int(args.accuracy.split('@')[-1])
-        accuracy.accuracy(config, relax)
+        accuracy.accuracy(eval_vector_labels, relaxation=relax)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)

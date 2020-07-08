@@ -1,5 +1,5 @@
 import json
-# from interpretability.loader.embedding import Embedding as EmbeddingObject
+from interpretability.loader.embedding import Embedding as EmbeddingObject
 
 
 class Embedding:
@@ -11,7 +11,7 @@ class Embedding:
         self._object = None
 
     @property
-    def embedding(self):
+    def embedding(self) -> EmbeddingObject:
         """
         Returns the Embedding object ('loaders/embedding.py')
         :return:

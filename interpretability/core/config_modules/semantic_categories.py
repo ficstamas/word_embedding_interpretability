@@ -9,6 +9,7 @@ class SemanticCategories:
         self.drop_rate = None
         self.seed = None
         self.categories = None
+        self.test_words_path = None
 
     def to_json(self) -> str:
         return json.dumps(
@@ -18,6 +19,7 @@ class SemanticCategories:
                 "drop_rate": self.drop_rate,
                 "seed": self.seed,
                 "load_method": self.load_method,
+                "test_words_path": self.test_words_path,
             })
 
     def __str__(self):
