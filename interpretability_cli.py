@@ -101,7 +101,7 @@ if __name__ == '__main__':
         print("The OS is not supported")
         sys.exit(0)
 
-    config = Config(memory_prefix)
+    config = Config(memory_prefix=memory_prefix)
 
     # Setting every parameter
     config.set_project_path(args.workspace, args.name)

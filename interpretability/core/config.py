@@ -17,7 +17,7 @@ class Config(metaclass=Singleton):
             self.distance = Distance()
             self.kde = KDE()
             self.project = Project()
-            self.data = Data(memory_prefix)
+            self.data = Data(kwargs['memory_prefix'])
             self.model = ModelParams()
             # Logging config
             self.logger = logging.getLogger("default")
