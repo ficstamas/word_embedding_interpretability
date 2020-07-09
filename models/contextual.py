@@ -73,4 +73,3 @@ class ContextualModel(DefaultModel):
                     distance_matrix[i, j, 1] = sign
         weights_mem.close()
         dist_mem.close()
-        w2i_mem.close()

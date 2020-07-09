@@ -12,7 +12,6 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
     if config is None:
         config = Config(access=True)
 
-    embedding = config.embedding.embedding
     distance_mem = SharedMemory(config.data.distance_matrix)
     distance_matrix = np.ndarray(shape=config.data.distance_matrix_shape,
                                  buffer=distance_mem.buf)
