@@ -12,6 +12,11 @@ import os
 import time
 import platform
 import sys
+import logging
+
+mpl_logger = logging.getLogger('matplotlib')
+mpl_logger.setLevel(logging.WARNING)
+
 
 if __name__ == '__main__':
     freeze_support()  # for Windows support

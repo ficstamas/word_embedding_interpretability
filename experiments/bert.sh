@@ -19,5 +19,5 @@ bert="data/bert/semcor.bert.sparse.l24.npz"
 test_weights="data/bert/all.bert.sparse.l24.npz"
 for method in ${methods[*]}
 do
-    python interpretability_cli.py --test_words_weights "$test_weights" --test_words "$test_words" --embedding_path "$bert" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes $proc --distance "$method" --model "contextual" --workspace $workspace --name "${method}_sparse" -save --accuracy "accuracy@1";
+    python interpretability_cli.py --test_words_weights "$test_weights" --test_words "$test_words" --embedding_path "$bert" -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes $proc --distance "$method" --model "contextual" --workspace $workspace --name "${method}_sparse" -save --accuracy "accuracy@1";
 done
