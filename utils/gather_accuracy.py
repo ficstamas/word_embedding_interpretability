@@ -39,7 +39,7 @@ def gather(workspace):
                                          'scores': res}
 
     # save
-    fp = open(os.path.join(workspace, "gathered_accuracy.json"))
+    fp = open(os.path.join(workspace, "gathered_accuracy.json"), mode='w', encoding='utf8')
     json.dump(results, fp, indent=4)
     fp.close()
 
