@@ -31,6 +31,9 @@ class Distance:
     def to_json(self) -> str:
         return json.dumps({"name": self.name})
 
+    def from_dict(self, params):
+        self.name = params["name"]
+
     def __str__(self):
         return self.to_json()
 

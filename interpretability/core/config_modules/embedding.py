@@ -31,6 +31,12 @@ class Embedding:
                 "lines_to_read": self.lines_to_read,
             })
 
+    def from_dict(self, params):
+        self.path = params["path"]
+        self.dense = params["dense"]
+        self.numpy = params["numpy"]
+        self.lines_to_read = params["lines_to_read"]
+
     def __str__(self):
         return self.to_json()
 

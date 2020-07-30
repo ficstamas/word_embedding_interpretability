@@ -92,6 +92,16 @@ class Project:
                 "processes": self.processes
             })
 
+    def from_dict(self, params):
+        self._workspace = params["workspace"]
+        self._name = params["name"]
+        self.project = params["project"]
+        self.logs = params["logs"]
+        self.models = params["models"]
+        self.results = params["results"]
+        self.processes = params["processes"]
+        self._structure_generated = True
+
     def __str__(self):
         return self.to_json()
 

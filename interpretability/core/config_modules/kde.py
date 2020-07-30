@@ -13,6 +13,10 @@ class KDE:
                 "bandwidth": self.bandwidth,
             })
 
+    def from_dict(self, params):
+        self.kernel = params["kernel"]
+        self.bandwidth = params["bandwidth"]
+
     def __str__(self):
         return self.to_json()
 

@@ -46,8 +46,11 @@ class Data:
             "distance_matrix": self.distance_matrix,
             "transformed_space": self.transformed_space,
             "transformed_space_distance_matrix": self.transformed_space_distance_matrix,
-            "test_word_weights_path": self.test_word_weights_path
+            "test_word_weights_path": self.test_word_weights_path,
         })
+
+    def from_dict(self, params):
+        self.test_word_weights_path = params["test_word_weights_path"]
 
     def __str__(self):
         return self.to_json()

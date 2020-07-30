@@ -4,6 +4,10 @@ import os
 import json
 from .config_modules import *
 import logging
+import sys
+import platform
+import time
+
 
 __all__ = ["Config"]
 
@@ -11,13 +15,23 @@ __all__ = ["Config"]
 class Config(metaclass=Singleton):
     def __init__(self, *args, **kwargs):
         if 'access' not in kwargs or 'access' in kwargs and not kwargs['access']:
-            self.memory_prefix = kwargs['memory_prefix']
+            if kwargs['memory_prefix'] is None:
+                # Setting up shared memory object prefixes in a platform dependent way
+                if platform.system() == 'Linux':
+                    self.memory_prefix = f"{os.getuid()}_{os.getpid()}_{int(round(time.time() * 1000))}_"
+                elif platform.system() == 'Windows':
+                    self.memory_prefix = f"{int(round(time.time() * 1000))}_"
+                else:
+                    print("The OS is not supported")
+                    sys.exit(0)
+            else:
+                self.memory_prefix = kwargs['memory_prefix']
             self.embedding = Embedding()
             self.semantic_categories = SemanticCategories()
             self.distance = Distance()
             self.kde = KDE()
             self.project = Project()
-            self.data = Data(kwargs['memory_prefix'])
+            self.data = Data(self.memory_prefix)
             self.model = ModelParams()
             # Logging config
             self.logger = logging.getLogger("default")
@@ -88,8 +102,32 @@ class Config(metaclass=Singleton):
                 "kde": self.kde.__repr__(),
                 "distance": self.distance.__repr__(),
                 "semantic_categories": self.semantic_categories.__repr__(),
-                "model_params": self.model.__repr__()
+                "model_params": self.model.__repr__(),
+                "data": self.data.__repr__()
             })
+
+    def restore_from_json(self, path):
+        self.logger.info(f"Restoring config from JSON...")
+        if not os.path.exists(path):
+            self.logger.error(f"{path} does not exist")
+            sys.exit(-1)
+        fp = open(path)
+        params = json.load(fp)
+        fp.close()
+        self.project.from_dict(params["project"])
+        self.embedding.from_dict(params["embedding"])
+        self.kde.from_dict(params["kde"])
+        self.distance.from_dict(params["distance"])
+        self.semantic_categories.from_dict(params["semantic_categories"])
+        self.model.from_dict(params["model_params"])
+        try:
+            self.data.from_dict(params["data"])
+        except NameError:
+            if not self.embedding.path.find("_semcor.") == -1:
+                self.data.test_word_weights_path = self.embedding.path.replace("_semcor.", "_ALL.")
+            else:
+                self.data.test_word_weights_path = self.embedding.path.replace("semcor.", "ALL.")
+        self.logger.info("Config restored!")
 
     def free(self):
         self.embedding.embedding.free()

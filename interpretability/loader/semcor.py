@@ -98,5 +98,5 @@ def read(path: str, config: Config) -> (Semcor, list):
         id += 1
     # index to category
     i2c = {v: k for k, v in c2i.items()}
-    config.logger.info(f"")
+    config.logger.info(f"Semcor is loaded!")
     return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes, eval_vector_indexes

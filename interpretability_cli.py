@@ -97,16 +97,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Setting up shared memory object prefixes in a platform dependent way
-    if platform.system() == 'Linux':
-        memory_prefix = f"{os.getuid()}_{os.getpid()}_{int(round(time.time()*1000))}_"
-    elif platform.system() == 'Windows':
-        memory_prefix = f"{int(round(time.time()*1000))}"
-    else:
-        print("The OS is not supported")
-        sys.exit(0)
-
-    config = Config(memory_prefix=memory_prefix)
+    config = Config(memory_prefix=None)
 
     # Setting every parameter
     config.set_project_path(args.workspace, args.name)

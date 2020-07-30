@@ -22,6 +22,14 @@ class SemanticCategories:
                 "test_words_path": self.test_words_path,
             })
 
+    def from_dict(self, params):
+        self.path = params["path"]
+        self.drop_method = params["drop_method"]
+        self.drop_rate = params["drop_rate"]
+        self.seed = params["seed"]
+        self.load_method = params["load_method"]
+        self.test_words_path = params["test_words_path"]
+
     def __str__(self):
         return self.to_json()
 
