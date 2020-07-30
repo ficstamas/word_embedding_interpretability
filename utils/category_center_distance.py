@@ -41,7 +41,7 @@ def gather(workspace):
         eval_vector_space = transform_embedding(config.data.test_word_weights, distance_matrix)
 
         config.logger.info("Loading I")
-        transformed_space_path = os.path.join(config.project.models, "transformed_matrix.npy")
+        transformed_space_path = os.path.join(config.project.models, "transformed_space.npy")
         transformed_space = np.load(transformed_space_path)
 
         category_centers = None
