@@ -68,6 +68,8 @@ def gather(workspace):
             else:
                 category_centers = np.concatenate([category_centers, category_center], axis=0)
 
+        breakpoint()
+        config.logger.info("Calculating dot product")
         category_distance = eval_vector_space.dot(category_centers.T)
         config.logger.info("Distances are calculated!")
         p = os.path.join(config.project.results, "category_distance.npy")
@@ -88,7 +90,7 @@ def gather(workspace):
                                          'name': config.project.name,
                                          'scores': res}
         config.free()
-        del config, distance_matrix, semcor, word_vector_labels, eval_vector_labels, transformed_space
+        del distance_matrix, semcor, word_vector_labels, eval_vector_labels, transformed_space, config
 
     # save
     fp = open(os.path.join(workspace, "gathered_category_distance.json"), mode='w', encoding='utf8')
