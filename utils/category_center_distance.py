@@ -49,6 +49,7 @@ def gather(workspace):
         config.logger.info("Creating masks for lexnames...")
         for i in tqdm.trange(mask.shape[0]):
             if word_vector_labels[i] == '<unknown>':
+                mask[i] = -1
                 continue
             lexname = word_vector_labels[i]
             lexname_id = semcor.c2i[lexname]
@@ -68,9 +69,8 @@ def gather(workspace):
             else:
                 category_centers = np.concatenate([category_centers, category_center], axis=0)
 
-        breakpoint()
         config.logger.info("Calculating dot product")
-        category_distance = eval_vector_space.dot(category_centers.T)
+        category_distance = np.dot(eval_vector_space, category_centers.T)  # eval_vector_space.dot(category_centers.T)
         config.logger.info("Distances are calculated!")
         p = os.path.join(config.project.results, "category_distance.npy")
         np.save(p, category_distance)
@@ -90,7 +90,7 @@ def gather(workspace):
                                          'name': config.project.name,
                                          'scores': res}
         config.free()
-        del distance_matrix, semcor, word_vector_labels, eval_vector_labels, transformed_space, config
+        del distance_matrix, semcor, word_vector_labels, eval_vector_labels, transformed_space, config, category_distance
 
     # save
     fp = open(os.path.join(workspace, "gathered_category_distance.json"), mode='w', encoding='utf8')
