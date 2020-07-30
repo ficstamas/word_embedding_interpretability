@@ -14,13 +14,13 @@ from interpretability.utils.transforms import transform_embedding
 
 def gather(workspace):
     results = {}
-    config = Config(memory_prefix=None)
 
     if not os.path.exists(workspace):
         print(f"Path {workspace} does not exists")
         sys.exit(-1)
 
     for root, dirs, files in os.walk(workspace):
+        config = Config(memory_prefix=None)
         if "params.config" not in files:
             continue
         # restoring config
@@ -59,12 +59,14 @@ def gather(workspace):
         config.logger.info("Calculating distances from ...")
 
         for i in range(semcor.c2i.__len__()):
+            if semcor.i2c[i] == 'adj.ppl':
+                continue
             indexes = np.where(mask == i)
             category_center = np.mean(transformed_space[indexes, :], axis=0)
             if category_centers is None:
-                category_centers = np.array([category_center])
+                category_centers = np.array(category_center)
             else:
-                category_centers = np.concatenate([category_centers, [category_center]], axis=0)
+                category_centers = np.concatenate([category_centers, category_center], axis=0)
 
         category_distance = eval_vector_space.dot(category_centers.T)
         config.logger.info("Distances are calculated!")
@@ -79,12 +81,14 @@ def gather(workspace):
                 continue
             true_labels[i] = semcor.c2i[eval_vector_labels[i]]
 
-        res = true_labels[true_labels == np.argmax(category_distance, axis=1)]/eval_vector_labels.__len__()
+        res = true_labels[true_labels == np.argmax(category_distance, axis=1)].shape[0]/eval_vector_labels.__len__()
         config.logger.info(f"Accuracy: {res}")
         results[get_random_string(8)] = {'accuracy_path': p,
                                          'workspace': workspace,
                                          'name': config.project.name,
                                          'scores': res}
+        config.free()
+        del config, distance_matrix, semcor, word_vector_labels, eval_vector_labels
 
     # save
     fp = open(os.path.join(workspace, "gathered_category_distance.json"), mode='w', encoding='utf8')
