@@ -44,8 +44,6 @@ def gather(workspace):
         transformed_space_path = os.path.join(config.project.models, "transformed_space.npy")
         transformed_space = np.load(transformed_space_path)
 
-        category_centers = None
-
         mask = np.zeros([word_vector_labels.__len__()], dtype=np.int32)
 
         config.logger.info("Creating masks for lexnames...")
@@ -56,9 +54,11 @@ def gather(workspace):
             lexname_id = semcor.c2i[lexname]
             mask[i] = lexname_id
         config.logger.info("Masks are done!")
-        config.logger.info("Calculating distances from ...")
+        config.logger.info("Calculating distances from category centers ...")
 
-        for i in range(semcor.c2i.__len__()):
+        category_centers = None
+
+        for i in tqdm.trange(semcor.c2i.__len__()):
             if semcor.i2c[i] == 'adj.ppl':
                 continue
             indexes = np.where(mask == i)
@@ -88,7 +88,7 @@ def gather(workspace):
                                          'name': config.project.name,
                                          'scores': res}
         config.free()
-        del config, distance_matrix, semcor, word_vector_labels, eval_vector_labels
+        del config, distance_matrix, semcor, word_vector_labels, eval_vector_labels, transformed_space
 
     # save
     fp = open(os.path.join(workspace, "gathered_category_distance.json"), mode='w', encoding='utf8')
