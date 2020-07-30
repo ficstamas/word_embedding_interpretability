@@ -122,7 +122,7 @@ class Config(metaclass=Singleton):
         self.model.from_dict(params["model_params"])
         try:
             self.data.from_dict(params["data"])
-        except NameError:
+        except (NameError, KeyError):
             if not self.embedding.path.find("_semcor.") == -1:
                 self.data.test_word_weights_path = self.embedding.path.replace("_semcor.", "_ALL.")
             else:
