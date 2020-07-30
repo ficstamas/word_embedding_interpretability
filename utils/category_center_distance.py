@@ -63,13 +63,16 @@ def gather(workspace):
             if semcor.i2c[i] == 'adj.ppl':
                 continue
             indexes = np.where(mask == i)
-            category_center = np.mean(transformed_space[indexes, :], axis=0)
+            category_center = np.mean(transformed_space[indexes, :][0], axis=0)
+            # print(category_center.shape)
             if category_centers is None:
-                category_centers = np.array(category_center)
+                category_centers = np.array([category_center])
             else:
-                category_centers = np.concatenate([category_centers, category_center], axis=0)
+                category_centers = np.concatenate([category_centers, [category_center]], axis=0)
 
+        # print(category_centers.shape)
         config.logger.info("Calculating dot product")
+        # return
         category_distance = np.dot(eval_vector_space, category_centers.T)  # eval_vector_space.dot(category_centers.T)
         config.logger.info("Distances are calculated!")
         p = os.path.join(config.project.results, "category_distance.npy")
