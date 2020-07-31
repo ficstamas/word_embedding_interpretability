@@ -8,8 +8,8 @@ from interpretability.loader.semcor import read
 from interpretability.core.config import Config
 from interpretability.loader.embedding import Embedding as EmbeddingObject
 import tqdm
-from multiprocessing.shared_memory import SharedMemory
 from interpretability.utils.transforms import transform_embedding
+from sklearn.preprocessing import StandardScaler, Normalizer
 
 
 def gather(workspace):
@@ -30,20 +30,25 @@ def gather(workspace):
         embedding = EmbeddingObject(config)
         config.embedding.embedding = embedding
 
+        # loading train and test words from semcor
         semcor, word_vector_labels, eval_vector_labels = read(config.semantic_categories.path, config)
         config.semantic_categories.categories = semcor
         config.data.load_test_word_weights()
 
+        # lading distance matrix
         config.logger.info("Loading W_D")
         distance_matrix_path = os.path.join(config.project.models, "distance_matrix.npy")
         distance_matrix = np.load(distance_matrix_path)
 
+        # transforming test space
         eval_vector_space = transform_embedding(config.data.test_word_weights, distance_matrix)
 
+        # loading trained transformed space
         config.logger.info("Loading I")
         transformed_space_path = os.path.join(config.project.models, "transformed_space.npy")
         transformed_space = np.load(transformed_space_path)
 
+        # creating masks for the semantic categories
         mask = np.zeros([word_vector_labels.__len__()], dtype=np.int32)
 
         config.logger.info("Creating masks for lexnames...")
@@ -57,6 +62,7 @@ def gather(workspace):
         config.logger.info("Masks are done!")
         config.logger.info("Calculating distances from category centers ...")
 
+        # calculating the category centers
         category_centers = None
 
         for i in tqdm.trange(semcor.c2i.__len__()):
@@ -69,12 +75,16 @@ def gather(workspace):
             else:
                 category_centers = np.concatenate([category_centers, category_center], axis=0)
 
+        # calculating the distances
         config.logger.info("Calculating dot product")
         category_distance = np.dot(eval_vector_space, category_centers.T)  # eval_vector_space.dot(category_centers.T)
+        category_distance = Normalizer('l1').transform(category_distance.T).T # normalizing vectors
+
         config.logger.info("Distances are calculated!")
         p = os.path.join(config.project.results, "category_distance.npy")
         np.save(p, category_distance)
 
+        # checking the labels
         config.logger.info(f"Extracting true labels")
         true_labels = np.zeros([eval_vector_labels.__len__()], dtype=np.int64)
         for i in tqdm.trange(true_labels.shape[0]):
