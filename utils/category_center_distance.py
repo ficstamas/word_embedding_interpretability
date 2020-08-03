@@ -79,8 +79,10 @@ def gather(workspace):
         # calculating the distances
         config.logger.info("Calculating dot product")
         # return
+        category_centers = Normalizer('l1').transform(category_centers)
+        # eval_vector_space = StandardScaler().fit_transform(eval_vector_space)
         category_distance = np.dot(eval_vector_space, category_centers.T)  # eval_vector_space.dot(category_centers.T)
-        category_distance = Normalizer('l1').transform(category_distance.T).T # normalizing vectors
+        # category_distance = Normalizer('l1').transform(category_distance.T).T # normalizing vectors
 
         config.logger.info("Distances are calculated!")
         p = os.path.join(config.project.results, "category_distance.npy")
@@ -94,8 +96,16 @@ def gather(workspace):
                 true_labels[i] = -1
                 continue
             true_labels[i] = semcor.c2i[eval_vector_labels[i]]
+        
+        mask = np.zeros(true_labels.shape[0], dtype=np.bool)
 
-        res = true_labels[true_labels == np.argmax(category_distance, axis=1)].shape[0]/eval_vector_labels.__len__()
+        mask[np.where(true_labels != -1)] = True
+        # mask = ~mask        
+        config.logger.info(f"True labels: {true_labels.shape}, prediction: {np.argmax(category_distance, axis=1).shape}\n mask shape: {mask.shape}")
+        true_labels_masked = true_labels[mask]
+        predicted_labels_masked = np.argmax(category_distance[mask, :], axis=1)
+        config.logger.info(f"plm: {predicted_labels_masked.shape}, tlm: {true_labels_masked.shape}")
+        res = true_labels_masked[true_labels_masked == predicted_labels_masked].shape[0]/true_labels_masked.shape[0]
         config.logger.info(f"Accuracy: {res}")
         results[get_random_string(8)] = {'accuracy_path': p,
                                          'workspace': workspace,
