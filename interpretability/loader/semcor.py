@@ -46,7 +46,7 @@ class SemcorReader:
                 yield synset_labels, lexname_labels, token_id, lemma, token.text.replace('-', '_')
 
 
-def read(path: str, config: Config) -> (Semcor, list):
+def read(path: str, config: Config) -> (Semcor, list, list):
     """
     Loading SemCor
     :param path:
@@ -99,4 +99,61 @@ def read(path: str, config: Config) -> (Semcor, list):
     # index to category
     i2c = {v: k for k, v in c2i.items()}
     config.logger.info(f"Semcor is loaded!")
+    return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes, eval_vector_indexes
+
+
+def read_with_path(train_path: str, test_path: str) -> (Semcor, list, list):
+    """
+    Loading SemCor from given path (no config object required, to work with outer scripts)
+    :param path:
+    :param train_path:
+    :param test_path:
+    :return:
+    """
+    vocab = {}
+    c2i, i2c = {}, {}
+    word_vector_indexes = {}
+    word_vector_tokens = {}
+    eval_data = {}
+    eval_vector_indexes = {}
+    id = 0
+    # Loading semcor
+    for data in SemcorReader().get_tokens(train_path):
+        if data[1].__len__() != 0:
+            for lexname in set(data[1]):
+                if lexname in vocab:
+                    vocab[lexname].add(data[4])
+                else:
+                    if lexname != 'adj.ppl':
+                        eval_data[lexname] = set()
+                        vocab[lexname] = set()
+                        vocab[lexname].add(data[4])
+                    else:
+                        continue
+        word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
+        if word_vector_indexes[id] == 'adj.ppl':
+            word_vector_indexes[id] = '<unknown>'
+        word_vector_tokens[id] = data[1]
+        id += 1
+
+    id = 0
+    # Loading eval data
+    for data in SemcorReader().get_tokens(test_path):
+        if data[1].__len__() != 0:
+            for lexname in set(data[1]):
+                lexname: str
+                if lexname != 'adj.ppl':
+                    eval_data[lexname].add(data[4])
+        eval_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
+        if eval_vector_indexes[id] == 'adj.ppl':
+            eval_vector_indexes[id] = '<unknown>'
+        id += 1
+
+    id = 0
+    # category to index
+    for lexname in vocab:
+        c2i[lexname] = id
+        id += 1
+    # index to category
+    i2c = {v: k for k, v in c2i.items()}
     return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes, eval_vector_indexes
