@@ -93,6 +93,9 @@ if __name__ == '__main__':
     else:
         test = np.load(args.test)
 
+    if not os.path.exists(args.output):
+        os.makedirs(args.output, exist_ok=True)
+
     sm, l, k = read_with_path(args.semcor_train, args.semcor_test)
 
     res = calculate_score(train, test, (sm, l, k), args.output)
