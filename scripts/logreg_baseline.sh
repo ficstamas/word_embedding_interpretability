@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+cd ..
+
 semcor_train="/data/berend/WSD_Evaluation_Framework/Training_Corpora/SemCor/semcor.data.xml"
 semcor_test="/data/berend/WSD_Evaluation_Framework/Evaluation_Datasets/ALL/ALL.data.xml"
 
@@ -17,7 +19,7 @@ sense_bert_base_test="/data/ficstamas/representations/sensebert-base-uncased/ALL
 
 out="/data/ficstamas/workspace/baseline_results/logreg_results.txt"
 
-python logistic_regressor.py --train_vectors "$bert_train" --test_vectors "$bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "bert-large-cased" --output "$out"
-python logistic_regressor.py --train_vectors "$bert_base_train" --test_vectors "$bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "bert-base-cased" --output "$out"
-python logistic_regressor.py --train_vectors "$sense_bert_train" --test_vectors "$sense_bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "sensebert-large-uncased" --output "$out"
-python logistic_regressor.py --train_vectors "$sense_bert_base_train" --test_vectors "$sense_bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "sensebert-base-uncased" --output "$out"
+python -m scripts.logistic_regressor --train_vectors "$bert_train" --test_vectors "$bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "bert-large-cased" --output "$out"
+python -m scripts.logistic_regressor --train_vectors "$bert_base_train" --test_vectors "$bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "bert-base-cased" --output "$out"
+python -m scripts.logistic_regressor --train_vectors "$sense_bert_train" --test_vectors "$sense_bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "sensebert-large-uncased" --output "$out"
+python -m scripts.logistic_regressor --train_vectors "$sense_bert_base_train" --test_vectors "$sense_bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "sensebert-base-uncased" --output "$out"

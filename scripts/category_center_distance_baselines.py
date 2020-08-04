@@ -39,7 +39,7 @@ def calculate_score(train_weights: np.ndarray, test_weights, _semcor, output):
             category_centers = np.concatenate([category_centers, [category_center]], axis=0)
 
     # calculating the distances
-    config.logger.info("Calculating dot product")
+    print("Calculating dot product")
     # return
     category_centers = Normalizer('l1').transform(category_centers)
     category_distance = np.dot(test_weights, category_centers.T)

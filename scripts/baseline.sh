@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+cd ..
+
 semcor_train="/data/berend/WSD_Evaluation_Framework/Training_Corpora/SemCor/semcor.data.xml"
 semcor_test="/data/berend/WSD_Evaluation_Framework/Evaluation_Datasets/ALL/ALL.data.xml"
 
