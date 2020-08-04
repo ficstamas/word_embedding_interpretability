@@ -15,7 +15,7 @@ sense_bert_test="/data/ficstamas/representations/sensebert-large-uncased/ALL.sen
 sense_bert_base_train="/data/ficstamas/representations/sensebert-base-uncased/semcor.sensebert-base-uncased.layer_12.npy"
 sense_bert_base_test="/data/ficstamas/representations/sensebert-base-uncased/ALL.sensebert-base-uncased.layer_12.npy"
 
-python category_center_distance_baselines.py --train "$bert_train" --test "$bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/bert-large-cased/"
-python category_center_distance_baselines.py --train "$bert_base_train" --test "$bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/bert-base-cased/"
-python category_center_distance_baselines.py --train "$sense_bert_train" --test "$sense_bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/sensebert-large-cased/"
-python category_center_distance_baselines.py --train "$sense_bert_base_train" --test "$sense_bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/sensebert-base-cased/"
+python -m scripts.category_center_distance_baselines --train "$bert_train" --test "$bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/bert-large-cased/"
+python -m scripts.category_center_distance_baselines --train "$bert_base_train" --test "$bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/bert-base-cased/"
+python -m scripts.category_center_distance_baselines --train "$sense_bert_train" --test "$sense_bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/sensebert-large-cased/"
+python -m scripts.category_center_distance_baselines --train "$sense_bert_base_train" --test "$sense_bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/sensebert-base-cased/"
