@@ -11,8 +11,8 @@ cd ..
 
 for f in ${path+*}; do
     if [[ -d "$f" ]]; then
-        train="${path+f+"saves/transformed_space.npy.npy"}"
-        test="${path+f+"saves/validation_transformed_space.npy"}"
+        train="$path${f}saves/transformed_space.npy"
+        test="$path${f}saves/validation_transformed_space.npy"
         python -m scripts.logistic_regressor --train_vectors "$train" --test_vectors "$test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "${f::-1}" --output "$out"
     fi
 done
