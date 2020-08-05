@@ -44,6 +44,10 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
 
     config.logger.info("Transformed space calculated!")
 
+    np.save(os.path.join(config.project.models, "validation_transformed_space.npy"))
+
+    config.logger.info(f"Saved transformed space for validation ({config.data.test_word_weights_path})")
+
     test_weights = None
     test_labels = []
     argmax_matrix = None
