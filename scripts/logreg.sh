@@ -12,8 +12,8 @@ cd ..
 for f in ${path}*; do
     if [[ -d "$f" ]]; then
         IFS='/' read -ra FOLDERS <<< "$f"
-        train="${f}saves/transformed_space.npy"
-        test="${f}saves/validation_transformed_space.npy"
+        train="${f}/saves/transformed_space.npy"
+        test="${f}/saves/validation_transformed_space.npy"
         name="${FOLDERS[-1]}"
         python -m scripts.logistic_regressor --train_vectors "$train" --test_vectors "$test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --name "$name" --output "$out"
     fi

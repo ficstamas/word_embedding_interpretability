@@ -21,3 +21,5 @@ python -m scripts.category_center_distance_baselines --train "$bert_train" --tes
 python -m scripts.category_center_distance_baselines --train "$bert_base_train" --test "$bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/bert-base-cased/"
 python -m scripts.category_center_distance_baselines --train "$sense_bert_train" --test "$sense_bert_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/sensebert-large-cased/"
 python -m scripts.category_center_distance_baselines --train "$sense_bert_base_train" --test "$sense_bert_base_test" --semcor_train "$semcor_train" --semcor_test "$semcor_test" --output "/data/ficstamas/workspace/baseline_results/sensebert-base-cased/"
+
+python -m scripts.category_center_distance --workspace /data/ficstamas/workspace/sense-bert/

@@ -7,6 +7,7 @@ from interpretability.loader.semcor import read_with_path, Semcor
 from sklearn.preprocessing import StandardScaler, Normalizer
 import scipy.sparse as sp
 import tqdm
+import matplotlib.pyplot as plt
 
 
 def calculate_score(train_weights: np.ndarray, test_weights, _semcor, output):
@@ -41,7 +42,7 @@ def calculate_score(train_weights: np.ndarray, test_weights, _semcor, output):
     # calculating the distances
     print("Calculating dot product")
     # return
-    category_centers = Normalizer('l1').transform(category_centers)
+    category_centers = Normalizer('l2').transform(category_centers)
     category_distance = np.dot(test_weights, category_centers.T)
 
     p = os.path.join(output, "category_distance.npy")

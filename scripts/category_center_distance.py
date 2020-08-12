@@ -79,7 +79,7 @@ def gather(workspace):
         # calculating the distances
         config.logger.info("Calculating dot product")
         # return
-        category_centers = Normalizer('l1').transform(category_centers)
+        category_centers = Normalizer('l2').transform(category_centers)
         # eval_vector_space = StandardScaler().fit_transform(eval_vector_space)
         category_distance = np.dot(eval_vector_space, category_centers.T)  # eval_vector_space.dot(category_centers.T)
         # category_distance = Normalizer('l1').transform(category_distance.T).T # normalizing vectors
