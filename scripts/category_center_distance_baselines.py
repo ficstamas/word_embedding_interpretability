@@ -84,13 +84,13 @@ if __name__ == '__main__':
 
     if args.train.endswith(".npz"):
         train = sp.load_npz(args.train)
-        train = train.toarra()
+        train = train.toarray()
     else:
         train = np.load(args.train)
 
     if args.test.endswith(".npz"):
         test = sp.load_npz(args.test)
-        test = test.toarra()
+        test = test.toarray()
     else:
         test = np.load(args.test)
 

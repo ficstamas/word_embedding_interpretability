@@ -3,7 +3,7 @@ from scipy.integrate import quad
 from sklearn.neighbors import KernelDensity
 from typing import Tuple, Literal
 
-__all__ = ["closed_hellinger_distance", "continuous_hellinger_distance"]
+__all__ = ["closed_hellinger_distance", "continuous_hellinger_distance", "exponential_hellinger_distance"]
 
 
 def closed_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int, int]:
@@ -41,6 +41,37 @@ def closed_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int
     # Formula
     x = -0.25 * (((mu_1 - mu_2) ** 2) / (var_1 + var_2))
     h = 1 - np.sqrt((2 * std_1 * std_2) / (var_1 + var_2)) * np.exp(x)
+
+    sign = -1 if mu_1 - mu_2 < 0 else 1
+    return np.sqrt(h), sign
+
+
+def exponential_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int, int]:
+    """
+    Calculates Hellinger distance between two vectors which assumed to come from exponential distribution
+    Parameters
+    ----------
+    p : np.ndarray
+        Vector 1
+    q : np.ndarray
+        Vector 2
+    config: Config
+        Just to maintain uniform headers between distance functions
+    Returns
+    -------
+    tuple
+        Returns with the distance and the sign of the difference of means
+    """
+    # Mean of p and q
+    mu_1 = np.mean(p)
+    mu_2 = np.mean(q)
+
+    # rate of change
+    alpha = 1/mu_1
+    beta = 1/mu_2
+
+    # Formula
+    h = 1 - (2*np.sqrt(alpha*beta)) / (alpha + beta)
 
     sign = -1 if mu_1 - mu_2 < 0 else 1
     return np.sqrt(h), sign

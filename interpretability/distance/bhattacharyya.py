@@ -3,7 +3,7 @@ from scipy.integrate import quad
 from sklearn.neighbors import KernelDensity
 from typing import Tuple, Literal
 
-__all__ = ["closed_bhattacharyya_distance", "continuous_bhattacharyya_distance"]
+__all__ = ["closed_bhattacharyya_distance", "continuous_bhattacharyya_distance", "exponential_bhattacharyya_distance"]
 
 
 def closed_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int, int]:
@@ -40,6 +40,36 @@ def closed_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple
     bc = x + ((mean1 - mean2) ** 2 / (var1 + var2)) / 4
     sign = -1 if mean1 - mean2 < 0 else 1
     return bc, sign
+
+
+def exponential_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int, int]:
+    """
+    Calculates Bhattacharyya distance between two vectors which assumed to come from exponential distribution
+    Parameters
+    ----------
+    p : np.ndarray
+        Vector 1
+    q : np.ndarray
+        Vector 2
+    config: Config
+        Just to maintain uniform headers between distance functions
+    Returns
+    -------
+    tuple
+        Returns with the distance and the sign of the difference of means
+    """
+    # Mean of p and q
+    mean1 = np.mean(p)
+    mean2 = np.mean(q)
+
+    # rate of change
+    alpha = 1/mu_1
+    beta = 1/mu_2
+    
+    # Formula
+    bc = (2*np.sqrt(alpha*beta))/(alpha+beta)
+    sign = -1 if mean1 - mean2 < 0 else 1
+    return -np.log(bc), sign
 
 
 def _remove_zeros(x: np.ndarray):

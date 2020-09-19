@@ -78,7 +78,8 @@ class Config(metaclass=Singleton):
         self.kde.kernel = kernel
         self.kde.bandwidth = bandwidth
 
-    def set_distance(self, dist: Literal['bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal']):
+    def set_distance(self, dist: Literal['bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal',
+                                         'hellinger_exponential', 'bhattacharyya_exponential']):
         self.distance.name = dist
 
     def log_config(self):

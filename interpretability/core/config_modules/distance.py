@@ -8,7 +8,9 @@ class Distance:
         'bhattacharyya': bhattacharyya.continuous_bhattacharyya_distance,
         'hellinger': hellinger.continuous_hellinger_distance,
         'bhattacharyya_normal': bhattacharyya.closed_bhattacharyya_distance,
-        'hellinger_normal': hellinger.closed_hellinger_distance
+        'hellinger_normal': hellinger.closed_hellinger_distance,
+        'hellinger_exponential': hellinger.exponential_hellinger_distance,
+        'bhattacharyya_exponential': bhattacharyya.exponential_bhattacharyya_distance
     }
 
     def __init__(self):
