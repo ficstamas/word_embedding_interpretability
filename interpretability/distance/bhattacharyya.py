@@ -63,9 +63,9 @@ def exponential_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> 
     mean2 = np.mean(q)
 
     # rate of change
-    alpha = 1/mu_1
-    beta = 1/mu_2
-    
+    alpha = 1/mean1
+    beta = 1/mean2
+
     # Formula
     bc = (2*np.sqrt(alpha*beta))/(alpha+beta)
     sign = -1 if mean1 - mean2 < 0 else 1
