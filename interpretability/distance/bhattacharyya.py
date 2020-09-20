@@ -68,6 +68,8 @@ def exponential_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> 
 
     # Formula
     bc = (2*np.sqrt(alpha*beta))/(alpha+beta)
+    if alpha + beta == 0:
+        bc = 1e-5
     sign = -1 if mean1 - mean2 < 0 else 1
     return -np.log(bc), sign
 

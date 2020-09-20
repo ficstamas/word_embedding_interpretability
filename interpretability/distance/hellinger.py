@@ -72,6 +72,8 @@ def exponential_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tupl
 
     # Formula
     h = 1 - (2*np.sqrt(alpha*beta)) / (alpha + beta)
+    if alpha + beta == 0:
+        h = 1
 
     sign = -1 if mu_1 - mu_2 < 0 else 1
     return np.sqrt(h), sign
