@@ -109,6 +109,15 @@ def continuous_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple
     mean1 = np.mean(p)
     mean2 = np.mean(q)
 
+    if np.std(q) == 0 and np.mean(q) == 0:
+        return 1, -1 if mean1 < 0 else 1
+
+    if np.std(p) == 0 and np.mean(p) == 0:
+        return 0, 1
+
+    p = p[p != 0]
+    q = q[q != 0]
+
     p_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
     q_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
     _p = p[:, np.newaxis]
