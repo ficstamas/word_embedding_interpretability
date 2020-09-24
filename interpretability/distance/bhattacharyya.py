@@ -22,6 +22,20 @@ def closed_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple
     tuple
         Returns with the distance and the sign of the difference of means
     """
+    # modification begin
+    if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
+        return 0, 1
+
+    if np.std(q) == 0 and np.mean(q) == 0:
+        return 1, -1 if np.mean(p) < 0 else 1
+
+    if np.std(p) == 0 and np.mean(p) == 0:
+        return 0, 1
+
+    p = p[p != 0]
+    q = q[q != 0]
+    # modification end
+
     # Variance of p and q
     var1 = np.std(p) ** 2
     var2 = np.std(q) ** 2
@@ -103,6 +117,9 @@ def continuous_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> T
     mean1 = np.mean(p)
     mean2 = np.mean(q)
 
+    # modification begin
+    if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
+        return 0, 1
     if np.std(q) == 0 and np.mean(q) == 0:
         return -np.log(1e-5), -1 if mean1 < 0 else 1
 
@@ -111,6 +128,7 @@ def continuous_bhattacharyya_distance(p: np.ndarray, q: np.ndarray, config) -> T
 
     p = p[p != 0]
     q = q[q != 0]
+    # modification end
 
     p_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
     q_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
