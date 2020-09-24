@@ -66,15 +66,12 @@ def read(path: str, config: Config) -> (Semcor, list, list):
                 if lexname in vocab:
                     vocab[lexname].add(data[4])
                 else:
-                    if lexname != 'adj.ppl':
-                        eval_data[lexname] = set()
-                        vocab[lexname] = set()
-                        vocab[lexname].add(data[4])
-                    else:
-                        continue
+                    eval_data[lexname] = set()
+                    vocab[lexname] = set()
+                    vocab[lexname].add(data[4])
         word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
-        if word_vector_indexes[id] == 'adj.ppl':
-            word_vector_indexes[id] = '<unknown>'
+        # if word_vector_indexes[id] == 'adj.ppl':
+        #     word_vector_indexes[id] = '<unknown>'
         word_vector_tokens[id] = data[1]
         id += 1
 
@@ -84,11 +81,11 @@ def read(path: str, config: Config) -> (Semcor, list, list):
         if data[1].__len__() != 0:
             for lexname in set(data[1]):
                 lexname: str
-                if lexname != 'adj.ppl':
-                    eval_data[lexname].add(data[4])
+                # if lexname != 'adj.ppl':
+                eval_data[lexname].add(data[4])
         eval_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
-        if eval_vector_indexes[id] == 'adj.ppl':
-            eval_vector_indexes[id] = '<unknown>'
+        # if eval_vector_indexes[id] == 'adj.ppl':
+        #     eval_vector_indexes[id] = '<unknown>'
         id += 1
 
     id = 0
@@ -124,12 +121,10 @@ def read_with_path(train_path: str, test_path: str) -> (Semcor, list, list):
                 if lexname in vocab:
                     vocab[lexname].add(data[4])
                 else:
-                    if lexname != 'adj.ppl':
-                        eval_data[lexname] = set()
-                        vocab[lexname] = set()
-                        vocab[lexname].add(data[4])
-                    else:
-                        continue
+                    # if lexname != 'adj.ppl':
+                    eval_data[lexname] = set()
+                    vocab[lexname] = set()
+                    vocab[lexname].add(data[4])
         word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
         if word_vector_indexes[id] == 'adj.ppl':
             word_vector_indexes[id] = '<unknown>'
@@ -142,11 +137,11 @@ def read_with_path(train_path: str, test_path: str) -> (Semcor, list, list):
         if data[1].__len__() != 0:
             for lexname in set(data[1]):
                 lexname: str
-                if lexname != 'adj.ppl':
-                    eval_data[lexname].add(data[4])
+                # if lexname != 'adj.ppl':
+                eval_data[lexname].add(data[4])
         eval_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
-        if eval_vector_indexes[id] == 'adj.ppl':
-            eval_vector_indexes[id] = '<unknown>'
+        # if eval_vector_indexes[id] == 'adj.ppl':
+        #     eval_vector_indexes[id] = '<unknown>'
         id += 1
 
     id = 0
