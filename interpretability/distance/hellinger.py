@@ -24,17 +24,17 @@ def closed_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int
     """
 
     # modification begin
-    if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
-        return 0, 1
-    if np.std(q) == 0 and np.mean(q) == 0:
-        return 1, -1 if np.mean(p) < 0 else 1
-
-    if np.std(p) == 0 and np.mean(p) == 0:
-        return 0, 1
-
-    p = p[p != 0]
-    q = q[q != 0]
-    # modification end
+    # if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
+    #     return 0, 1
+    # if np.std(q) == 0 and np.mean(q) == 0:
+    #     return 1, -1 if np.mean(p) < 0 else 1
+    #
+    # if np.std(p) == 0 and np.mean(p) == 0:
+    #     return 0, 1
+    #
+    # p = p[p != 0]
+    # q = q[q != 0]
+    # # modification end
 
     std_1 = np.std(p)
     std_2 = np.std(q)
@@ -124,17 +124,17 @@ def continuous_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple
     mean2 = np.mean(q)
 
     # modification begin
-    if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
-        return 0, 1
-    if np.std(q) == 0 and np.mean(q) == 0:
-        return 1, -1 if mean1 < 0 else 1
-
-    if np.std(p) == 0 and np.mean(p) == 0:
-        return 0, 1
-
-    p = p[p != 0]
-    q = q[q != 0]
-    # modification end
+    # if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
+    #     return 0, 1
+    # if np.std(q) == 0 and np.mean(q) == 0:
+    #     return 1, -1 if mean1 < 0 else 1
+    #
+    # if np.std(p) == 0 and np.mean(p) == 0:
+    #     return 0, 1
+    #
+    # p = p[p != 0]
+    # q = q[q != 0]
+    # # modification end
 
     p_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
     q_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
