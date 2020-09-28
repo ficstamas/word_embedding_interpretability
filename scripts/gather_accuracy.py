@@ -13,7 +13,7 @@ def get_random_string(length):
     return result_str
 
 
-def gather(workspace):
+def gather(workspace, weight_type=None):
     results = {}
     if not os.path.exists(workspace):
         print(f"Path {workspace} does not exists")
@@ -28,7 +28,8 @@ def gather(workspace):
         fp.close()
 
         # reading accuracies
-        accuracy_path = os.path.join(params['project']['results'], "accuracy.txt")
+        file_name = "accuracy.txt" if weight_type is None else f"{weight_type}_accuracy.txt"
+        accuracy_path = os.path.join(params['project']['results'], file_name)
         fp = open(accuracy_path)
         res = fp.readlines()
         fp.close()
@@ -50,6 +51,8 @@ if __name__ == '__main__':
     # Embedding
     parser.add_argument("--workspace", type=str, required=True,
                         help="Path to the workspace")
+    parser.add_argument("--weight_type", type=str, required=False, default=None,
+                        help="The weighting type of distance matrix")
 
     args = parser.parse_args()
-    gather(args.workspace)
+    gather(args.workspace, args.weight_type)

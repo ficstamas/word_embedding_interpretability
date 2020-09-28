@@ -14,3 +14,7 @@ class Model(abc.ABC):
     @abc.abstractmethod
     def load(self):
         pass
+
+    @abc.abstractmethod
+    def relative_frequency(self):
+        pass

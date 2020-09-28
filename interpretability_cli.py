@@ -54,6 +54,9 @@ if __name__ == '__main__':
     parser.add_argument("--distance", type=str, required=True,
                         help="Method to measure distance. Available: "
                              "['bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal']")
+    parser.add_argument("--distance_weight", type=str, required=False,
+                        choices=["none", "relative_frequency"],
+                        help="The way of weighting over distances")
 
     # Project
     parser.add_argument("--workspace", type=str, required=True,
@@ -92,8 +95,10 @@ if __name__ == '__main__':
 
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
-                        model="default", interpretability=False, accuracy='word_retrieval_test', load=False, save=False, relaxation=10,
-                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False, test_word_weights=None)
+                        model="default", interpretability=False, accuracy='word_retrieval_test', load=False, save=False,
+                        relaxation=10,
+                        mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False, test_word_weights=None,
+                        distance_weight="none")
 
     args = parser.parse_args()
 
@@ -152,6 +157,11 @@ if __name__ == '__main__':
         model.load()
     else:
         model.run()
+
+    # weight of distances
+    if args.distance_weight:
+        model.relative_frequency()
+
     # Save
     if args.save:
         model.save()

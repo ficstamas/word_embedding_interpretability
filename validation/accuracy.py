@@ -52,7 +52,7 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
     test_labels = []
     argmax_matrix = None
 
-    if not os.path.exists(os.path.join(config.project.results, "accuracy.npz")):
+    if not os.path.exists(os.path.join(config.project.results, f"{config.distance.weight}_accuracy.npz")):
         config.logger.info("Calculating ordered accuracy matrix...")
         j = 0
         for i in tqdm.trange(transformed_space.shape[0]):
@@ -82,7 +82,7 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
         np.savez(os.path.join(config.project.results, "accuracy.npz"), labels=test_labels.astype(np.int8), values=argmax_matrix.astype(np.int8))
     else:
         config.logger.info("Loading ordered accuracy matrix...")
-        arrs = np.load(os.path.join(config.project.results, "accuracy.npz"))
+        arrs = np.load(os.path.join(config.project.results, f"{config.distance.weight}_accuracy.npz"))
         test_labels = arrs['labels']
         argmax_matrix = arrs['values']
 
@@ -99,6 +99,6 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
             score.append(0)
 
     config.logger.info(f"Accuracy is {np.mean(score)}")
-    fd = open(os.path.join(config.project.results, f"accuracy.txt"), mode='a')
+    fd = open(os.path.join(config.project.results, f"{config.distance.weight}_accuracy.txt"), mode='a')
     fd.write(f"{np.mean(score)}@{relaxation}\n")
     fd.close()

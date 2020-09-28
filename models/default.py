@@ -214,3 +214,6 @@ class DefaultModel(Model):
         dist_mem.close()
         w2i_mem.close()
 
+    def relative_frequency(self):
+        pass
+

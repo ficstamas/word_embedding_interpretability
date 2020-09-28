@@ -16,6 +16,18 @@ class Distance:
     def __init__(self):
         self._name = None
         self._function = None
+        self._weight = None
+
+    @property
+    def weight(self):
+        return self._weight
+
+    @weight.setter
+    def weight(self, val):
+        if val == "none" or val == "None":
+            self._weight = None
+        else:
+            self._weight = val
 
     @property
     def name(self):
