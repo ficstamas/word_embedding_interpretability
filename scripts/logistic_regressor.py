@@ -32,7 +32,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    lr = LogisticRegression(random_state=0)
+    lr = LogisticRegression(random_state=0, max_iter=100)
 
     print("Loading labels...")
 

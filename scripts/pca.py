@@ -24,8 +24,8 @@ if __name__ == '__main__':
     else:
         weights = np.load(args.weights)
 
-    n = np.linspace(44, weights.shape[1], 20).astype(np.int)[:-1]
-
+    n = np.linspace(44, weights.shape[1], 10).astype(np.int)[:-1]
+    
     for i in range(n.shape[0]):
         print(i)
         r = pca(weights, n[i])
