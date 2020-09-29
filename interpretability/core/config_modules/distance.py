@@ -30,6 +30,10 @@ class Distance:
             self._weight = val
 
     @property
+    def weight_name(self):
+        return "" if self._weight is None else f"{self._weight}_"
+
+    @property
     def name(self):
         return self._name
 

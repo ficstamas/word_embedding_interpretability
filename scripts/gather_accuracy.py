@@ -40,7 +40,7 @@ def gather(workspace, weight_type=None):
                                          'scores': res}
 
     # save
-    fp = open(os.path.join(workspace, "gathered_accuracy.json"), mode='w', encoding='utf8')
+    fp = open(os.path.join(workspace, f"gathered{'_' if weight_type is None else f'_{weight_type}_'}accuracy.json"), mode='w', encoding='utf8')
     json.dump(results, fp, indent=4)
     fp.close()
 
