@@ -1,8 +1,0 @@
-{
-    "train": "/data/ficstamas/representations/sensebert-large-uncased/semcor.sensebert-large-uncased.layer_24.npy_normTrue_K1500_lda0.05_semcor.sensebert-large-uncased.layer_24.npy_normTrue_K1500_lda0.05.npz",
-    "test": "/data/ficstamas/representations/sensebert-large-uncased/semcor.sensebert-large-uncased.layer_24.npy_normTrue_K1500_lda0.05_ALL.sensebert-large-uncased.layer_24.npy_normTrue_K1500_lda0.05.npz",
-    "semcor_train": "/data/berend/WSD_Evaluation_Framework/Training_Corpora/SemCor/semcor.data.xml",
-    "semcor_test": "/data/berend/WSD_Evaluation_Framework/Evaluation_Datasets/ALL/ALL.data.xml",
-    "output": "baseline_res",
-    "result": 0.5320557010892044
-}

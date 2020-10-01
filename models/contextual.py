@@ -4,15 +4,12 @@ import numpy as np
 from multiprocessing.shared_memory import SharedMemory
 import tqdm
 import os
-from sklearn.neighbors import KernelDensity
-import scipy
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 class ContextualModel(DefaultModel):
     def __init__(self):
         super(ContextualModel, self).__init__()
+        self.relative_frequency_matrix = np.zeros(self.config.semantic_categories.categories.i2c.__len__())
 
     @staticmethod
     def _process(source: str, modulus: int, config: Config):
@@ -73,3 +70,19 @@ class ContextualModel(DefaultModel):
                     distance_matrix[i, j, 1] = sign
         weights_mem.close()
         dist_mem.close()
+
+    def relative_frequency(self):
+        s = 0
+        embedding = self.config.embedding.embedding
+        semcat = self.config.semantic_categories.categories
+
+        for j in range(self.config.semantic_categories.categories.i2c.__len__()):
+            semcat_len = semcat.vocab[semcat.i2c[j]].__len__()
+            self.relative_frequency_matrix[j] = semcat_len
+            s += semcat_len
+        self.relative_frequency_matrix = self.relative_frequency_matrix / s
+
+        transformed_mem = SharedMemory(self.config.data.transformed_space)
+        transformed_space = np.ndarray(shape=self.config.data.transformed_space_shape, buffer=transformed_mem.buf)
+
+        transformed_space = transformed_space * self.relative_frequency_matrix
