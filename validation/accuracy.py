@@ -70,7 +70,7 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
                     j += 1
 
         for i in tqdm.trange(test_weights.shape[0]):
-            word_vector = np.array([np.abs(test_weights[i, :]).T])
+            word_vector = np.array([test_weights[i, :].T])
             lex_indexes = np.array([np.arange(word_vector.shape[1])])
             pairs = np.append(word_vector, lex_indexes, axis=0)
             sorted_word_vector = pairs[:, pairs[0, :].argsort()]
