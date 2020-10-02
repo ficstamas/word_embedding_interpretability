@@ -82,7 +82,7 @@ class ContextualModel(DefaultModel):
             s += semcat_len
         self.relative_frequency_matrix = self.relative_frequency_matrix / s
 
-        transformed_mem = SharedMemory(self.config.data.transformed_space)
-        transformed_space = np.ndarray(shape=self.config.data.transformed_space_shape, buffer=transformed_mem.buf)
+        # transformed_mem = SharedMemory(self.config.data.transformed_space)
+        # transformed_space = np.ndarray(shape=self.config.data.transformed_space_shape, buffer=transformed_mem.buf)
 
-        transformed_space = transformed_space * self.relative_frequency_matrix
+        # transformed_space = transformed_space * self.relative_frequency_matrix

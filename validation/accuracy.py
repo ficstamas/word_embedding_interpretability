@@ -8,7 +8,7 @@ import os
 import sys
 
 
-def accuracy(eval_vector_labels: dict, config=None, relaxation=1):
+def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None):
     if config is None:
         config = Config(access=True)
 

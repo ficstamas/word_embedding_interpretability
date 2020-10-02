@@ -159,8 +159,10 @@ if __name__ == '__main__':
         model.run()
 
     # weight of distances
+    weight = None
     if args.distance_weight:
         model.relative_frequency()
+        weight = model.relative_frequency_matrix
 
     # Save
     if args.save:
@@ -173,7 +175,7 @@ if __name__ == '__main__':
         word_retrieval_test.accuracy(config)
     elif args.accuracy.startswith('accuracy'):
         relax = int(args.accuracy.split('@')[-1])
-        accuracy.accuracy(eval_vector_labels, relaxation=relax)
+        accuracy.accuracy(eval_vector_labels, relaxation=relax, weight=weight)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)
