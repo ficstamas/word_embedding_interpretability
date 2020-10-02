@@ -40,7 +40,10 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None):
 
     scaled = StandardScaler(copy=True, with_mean=True, with_std=True).fit_transform(config.data.test_word_weights)
 
-    transformed_space = scaled.dot(sign_corrected)
+    if weight is None:
+        transformed_space = scaled.dot(sign_corrected)
+    else:
+        transformed_space = scaled.dot(sign_corrected) * weight
 
     config.logger.info("Transformed space calculated!")
 
