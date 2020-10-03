@@ -126,8 +126,8 @@ def read_with_path(train_path: str, test_path: str) -> (Semcor, list, list):
                     vocab[lexname] = set()
                     vocab[lexname].add(data[4])
         word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
-        if word_vector_indexes[id] == 'adj.ppl':
-            word_vector_indexes[id] = '<unknown>'
+        # if word_vector_indexes[id] == 'adj.ppl':
+        #     word_vector_indexes[id] = '<unknown>'
         word_vector_tokens[id] = data[1]
         id += 1
 
