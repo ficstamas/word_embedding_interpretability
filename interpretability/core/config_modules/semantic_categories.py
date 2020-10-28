@@ -10,6 +10,7 @@ class SemanticCategories:
         self.seed = None
         self.categories = None
         self.test_words_path = None
+        self.file_format = None
 
     def to_json(self) -> str:
         return json.dumps(
@@ -20,6 +21,7 @@ class SemanticCategories:
                 "seed": self.seed,
                 "load_method": self.load_method,
                 "test_words_path": self.test_words_path,
+                "file_format": self.file_format
             })
 
     def from_dict(self, params):
@@ -29,6 +31,10 @@ class SemanticCategories:
         self.seed = params["seed"]
         self.load_method = params["load_method"]
         self.test_words_path = params["test_words_path"]
+        if self.path[-5:] == ".json":
+            self.file_format = "json"
+        else:
+            self.file_format = "dict"
 
     def __str__(self):
         return self.to_json()

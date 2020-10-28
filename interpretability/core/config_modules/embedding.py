@@ -1,5 +1,5 @@
 import json
-from interpretability.loader.embedding import Embedding as EmbeddingObject
+from interpretability.reader.embedding import Embedding as EmbeddingObject
 
 
 class Embedding:

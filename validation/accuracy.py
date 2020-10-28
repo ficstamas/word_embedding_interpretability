@@ -1,5 +1,5 @@
 from interpretability.core.config import Config
-from interpretability.loader.semcor import Semcor
+from interpretability.reader.semcor import Semcor
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
 from sklearn.preprocessing import StandardScaler, Normalizer

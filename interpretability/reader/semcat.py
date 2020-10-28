@@ -6,7 +6,7 @@ import math
 from .embedding import Embedding
 from interpretability.core.config import Config
 from multiprocessing.shared_memory import SharedMemory
-
+import json
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%d-%b-%y %H:%M:%S')
@@ -172,15 +172,21 @@ def semcat_reader(config: Config) -> SemCat:
 
     id = 0
     # Read categories
-    for file in os.listdir(config.semantic_categories.path):
-        if file.endswith(".txt"):
-            category_name = file.rstrip('.txt').split('-')[0]
-            with open(os.path.join(config.semantic_categories.path, file), mode='r', encoding='utf8') as f:
-                words = f.read().splitlines()
-                vocab_size += words.__len__()
-                w2i[category_name] = id
-                vocab[category_name] = words
-                id += 1
+    if config.semantic_categories.file_format == "json":
+        vocab = json.load(open(config.semantic_categories.path, mode="r", encoding="utf8"))
+        for key in vocab:
+            w2i[key] = id
+            id += 1
+    else:
+        for file in os.listdir(config.semantic_categories.path):
+            if file.endswith(".txt"):
+                category_name = file.rstrip('.txt').split('-')[0]
+                with open(os.path.join(config.semantic_categories.path, file), mode='r', encoding='utf8') as f:
+                    words = f.read().splitlines()
+                    vocab_size += words.__len__()
+                    w2i[category_name] = id
+                    vocab[category_name] = words
+                    id += 1
 
     random.seed(config.semantic_categories.seed)
     percent = config.semantic_categories.drop_rate

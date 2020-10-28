@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from argparse import ArgumentParser
-from interpretability.loader.semcor import read_with_path
+from interpretability.reader.semcor import read_with_path
 import numpy as np
 import tqdm
 

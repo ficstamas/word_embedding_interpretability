@@ -3,7 +3,7 @@ import json
 import sys
 from argparse import ArgumentParser
 import numpy as np
-from interpretability.loader.semcor import read_with_path, Semcor
+from interpretability.reader.semcor import read_with_path, Semcor
 from sklearn.preprocessing import StandardScaler, Normalizer
 import scipy.sparse as sp
 import tqdm

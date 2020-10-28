@@ -4,9 +4,9 @@ import sys
 from argparse import ArgumentParser
 from .gather_accuracy import get_random_string
 import numpy as np
-from interpretability.loader.semcor import read
+from interpretability.reader.semcor import read
 from interpretability.core.config import Config
-from interpretability.loader.embedding import Embedding as EmbeddingObject
+from interpretability.reader.embedding import Embedding as EmbeddingObject
 import tqdm
 from interpretability.utils.transforms import transform_embedding
 from sklearn.preprocessing import StandardScaler, Normalizer

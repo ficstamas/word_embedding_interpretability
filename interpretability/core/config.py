@@ -49,6 +49,10 @@ class Config(metaclass=Singleton):
         self.semantic_categories.drop_method = drop_method
         self.semantic_categories.drop_rate = drop_rate
         self.semantic_categories.seed = seed
+        if self.semantic_categories.path[-5:] == ".json":
+            self.semantic_categories.file_format = "json"
+        else:
+            self.semantic_categories.file_format = "dict"
 
     def set_project_path(self, path: str, name: str):
         self.project.workspace = os.path.join(os.getcwd(), path)

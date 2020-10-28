@@ -2,10 +2,10 @@ from multiprocessing import freeze_support
 from argparse import ArgumentParser
 from interpretability.core.config import Config
 from models import *
-from interpretability.loader.embedding import Embedding as EmbeddingObject
-from interpretability.loader.semcat import semcat_reader
-from interpretability.loader.old_semcat import read as old_semcat_reader
-from interpretability.loader.semcor import read as semcor_reader
+from interpretability.reader.embedding import Embedding as EmbeddingObject
+from interpretability.reader.semcat import semcat_reader
+from interpretability.reader.old_semcat import read as old_semcat_reader
+from interpretability.reader.semcor import read as semcor_reader
 from validation import interpretability, word_retrieval_test, accuracy
 import json
 import os
@@ -95,10 +95,10 @@ if __name__ == '__main__':
 
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
-                        model="default", interpretability=False, accuracy='word_retrieval_test', load=False, save=False,
+                        model="default", interpretability=False, accuracy=None, load=False, save=False,
                         relaxation=10,
                         mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False, test_word_weights=None,
-                        distance_weight="none")
+                        distance_weight=None)
 
     args = parser.parse_args()
 
@@ -139,7 +139,7 @@ if __name__ == '__main__':
         semcat, word_vector_labels, eval_vector_labels = semcor_reader(config.semantic_categories.path, config)
         config.embedding.embedding._allocate_labels(word_vector_labels)
     else:
-        config.logger.error("Invalid loader type for semantic categories")
+        config.logger.error("Invalid reader type for semantic categories")
         sys.exit(0)
     config.semantic_categories.categories = semcat
 
@@ -171,11 +171,12 @@ if __name__ == '__main__':
     if args.interpretability:
         interpretability.interpretability(config, lamb=args.relaxation)
     # Accuracy
-    if args.accuracy == 'word_retrieval_test':
-        word_retrieval_test.accuracy(config)
-    elif args.accuracy.startswith('accuracy'):
-        relax = int(args.accuracy.split('@')[-1])
-        accuracy.accuracy(eval_vector_labels, relaxation=relax, weight=weight)
+    if args.accuracy is not None:
+        if args.accuracy == 'word_retrieval_test':
+            word_retrieval_test.accuracy(config)
+        elif args.accuracy.startswith('accuracy'):
+            relax = int(args.accuracy.split('@')[-1])
+            accuracy.accuracy(eval_vector_labels, relaxation=relax, weight=weight)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)

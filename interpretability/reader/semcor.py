@@ -1,6 +1,6 @@
 import xml.etree.ElementTree as ET
 from nltk.corpus import wordnet as wn
-from interpretability.loader.semcat import SemCat
+from interpretability.reader.semcat import SemCat
 from interpretability.core.config import Config
 
 
