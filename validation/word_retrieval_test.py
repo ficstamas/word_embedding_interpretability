@@ -103,7 +103,7 @@ def accuracy(config: Config):
 
     config.logger.info(f"Results are: {values}")
 
-    opath = os.path.join(config.project.results, "accuracy.txt")
+    opath = os.path.join(config.project.results, "word_retrieval_test.txt")
     f = open(opath, mode="w", encoding="utf8")
     for key in values:
         f.write(f"# Validation size: {key}\n")
