@@ -2,6 +2,7 @@ import numpy as np
 import tqdm
 import multiprocessing
 from multiprocessing.shared_memory import SharedMemory
+from multiprocessing import Queue, Manager
 from interpretability.core.config import Config
 from interpretability.score.wrappers.descriptors import MemoryInfo
 
@@ -23,6 +24,8 @@ def V_n(V, n_j, lamb, config: Config):
 
 
 def is_p(i, j, config: Config, embedding_memory: MemoryInfo, lamb: int):
+    lambdas = {l+1: 0 for l in range(lamb)}
+
     # Embedding
     weights_mem = SharedMemory(embedding_memory.name)
     w = np.ndarray(shape=embedding_memory.shape, buffer=weights_mem.buf)
@@ -35,45 +38,45 @@ def is_p(i, j, config: Config, embedding_memory: MemoryInfo, lamb: int):
     S = set(config.semantic_categories.categories.vocab[config.semantic_categories.categories.i2c[i]])
     n_i = config.semantic_categories.categories.vocab[config.semantic_categories.categories.i2c[i]].__len__()
 
-    v_p = V_p(V_sorted, n_i, lamb, config)
-    v_n = V_n(V_sorted, n_i, lamb, config)
+    for l in range(lamb):
+        v_p = V_p(V_sorted, n_i, l+1, config)
+        v_n = V_n(V_sorted, n_i, l+1, config)
 
-    IS_p = S.intersection(v_p).__len__() / n_i * 100
-    IS_n = S.intersection(v_n).__len__() / n_i * 100
+        IS_p = S.intersection(v_p).__len__() / n_i * 100
+        IS_n = S.intersection(v_n).__len__() / n_i * 100
 
-    return max(IS_p, IS_n)
+        lambdas[l+1] = max(IS_p, IS_n)
+    return lambdas
 
 
 def j_star(i: int, distance_matrix: np.ndarray):
     return int(np.argmax(distance_matrix[:, i, 0]).astype(dtype=np.int))
 
 
-def is_i(i: int, config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, lamb):
-    IS_ji = []
+def is_i(task: int, config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, lamb):
     # Distance space
     dist_mem = SharedMemory(distance_memory.name)
     distance_matrix = np.ndarray(shape=distance_memory.shape, buffer=dist_mem.buf)
 
-    D = distance_matrix.shape[0]
-
-    # Then we go through the embedding dimensions
-    for j in range(D):
-        IS_ji.append(is_p(i, j, config, embedding_memory, lamb))
-
-    # picking the max by W_b max->i
-    return IS_ji[j_star(i, distance_matrix)]
+    return is_p(task, j_star(task, distance_matrix), config, embedding_memory, lamb)
 
 
-def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, lamb):
-    IS_i = []
+def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, task_queue: Queue,
+               relaxation_memory: MemoryInfo, lamb):
 
-    # seq is the concept dimension indexes
-    for i in tqdm.trange(config.semantic_categories.categories.i2c.__len__()):
-        IS_i.append(is_i(i, config, embedding_memory, distance_memory, lamb))
-    return IS_i
+    relaxation_mem = SharedMemory(relaxation_memory.name)
+    relaxation_matrix = np.ndarray(shape=relaxation_memory.shape, buffer=relaxation_mem.buf)
+
+    if type(multiprocessing.current_process()) == multiprocessing.Process:
+        print("poggers I am the main")
+    while not task_queue.empty():
+        task = task_queue.get()
+        IS_i = is_i(task, config, embedding_memory, distance_memory, lamb)
+        for i in range(lamb):
+            relaxation_matrix[i, task] = IS_i[i+1]
 
 
-def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, proc=5, lamb=5):
+def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, lamb=5):
     """
     Calculating interpretability scores
     :param config: Config object
@@ -84,17 +87,35 @@ def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryI
     :return:
     """
     IS_i = []
-    number_of_processes = min(proc, lamb)
+    number_of_processes = config.project.processes
     pool = multiprocessing.Pool(processes=number_of_processes)
 
+    # Results
+    r = np.zeros([lamb, embedding_memory.shape[-1]], dtype=np.float)
+    results_name = f"{config.memory_prefix}_lambdas_per_dim"
+    results_mem = SharedMemory(name=results_name, create=True, size=r.nbytes)
+    buf = np.ndarray(r.shape, dtype=r.dtype, buffer=results_mem.buf)
+    buf[:, :] = r[:, :]
+    del r
+
+    relaxation_memory = MemoryInfo()
+    relaxation_memory.name = results_name
+    relaxation_memory.shape = buf.shape
+
+    task_manager = Manager()
+    task_queue = task_manager.Queue()
+
+    for i in range(config.semantic_categories.categories.i2c.__len__()):
+        task_queue.put(i)
+
     inputs = []
-    for i in range(lamb):
-        inputs.append([config, embedding_memory, distance_memory, i+1])
+    for i in range(number_of_processes):
+        inputs.append([config, embedding_memory, distance_memory, task_queue, relaxation_memory, lamb])
 
     with pool as p:
-        result = p.starmap(score_dist, inputs)
+        _ = p.starmap(score_dist, inputs)
 
-    for res in result:
-        IS_i.append(np.mean(np.array(res)).tolist())
+    res = np.mean(buf, axis=1)
+    IS_i = [res[i] for i in range(res.shape[0])]
 
     return IS_i
