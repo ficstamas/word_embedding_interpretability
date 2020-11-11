@@ -24,6 +24,7 @@ do
     done
     for ir in ${irdroprates[*]}
     do
+      cp="${workspace}/${embedding}-${method}_interpret_${ir}"
       if [ -d "$cp" ]; then
         continue
       fi
@@ -56,6 +57,7 @@ do
 
         for ir in ${irdroprates[*]}
         do
+          cp="${workspace}/${embedding}-${method}-K${K}-l${lambda}_sparse_interpret_${ir}"
           if [ -d "$cp" ]; then
             continue
           fi
