@@ -2,7 +2,7 @@ import numpy as np
 import tqdm
 import multiprocessing
 from multiprocessing.shared_memory import SharedMemory
-from multiprocessing import Queue, Manager
+from multiprocessing import Queue, Manager, Process
 from interpretability.core.config import Config
 from interpretability.score.wrappers.descriptors import MemoryInfo
 from queue import Empty
@@ -63,24 +63,35 @@ def is_i(task: int, config: Config, embedding_memory: MemoryInfo, distance_memor
 
 
 def score_dist(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, task_queue: Queue,
-               relaxation_memory: MemoryInfo, lamb):
+               progress_queue: Queue, relaxation_memory: MemoryInfo, lamb):
 
     relaxation_mem = SharedMemory(relaxation_memory.name)
     relaxation_matrix = np.ndarray(shape=relaxation_memory.shape, buffer=relaxation_mem.buf)
 
-    if type(multiprocessing.current_process()) == multiprocessing.Process:
-        print("poggers I am the main")
     while True:
         try:
             task = task_queue.get(True, 0.5)
         except Empty:
-            config.logger.info(f"Task Queue is empty")
+            # config.logger.info(f"Task Queue is empty")
             break
 
         IS_i = is_i(task, config, embedding_memory, distance_memory, lamb)
         for i in range(lamb):
             relaxation_matrix[i, task] = IS_i[i+1]
-        config.logger.info(f"Task Queue: {task_queue.qsize()}")
+        progress_queue.put(0)
+
+
+def _progress_bar(queue: Queue, total):
+    progress = tqdm.tqdm(total=total, unit='dim', desc=f'Progress\t')
+    while True:
+        try:
+            _ = queue.get(True, 0.5)
+            progress.n += 1
+            progress.update(0)
+            if progress.n == total:
+                break
+        except Empty:
+            continue
 
 
 def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryInfo, lamb=5):
@@ -111,16 +122,22 @@ def score(config: Config, embedding_memory: MemoryInfo, distance_memory: MemoryI
 
     task_manager = Manager()
     task_queue = task_manager.Queue()
+    progress_queue = task_manager.Queue()
 
     for i in range(config.semantic_categories.categories.i2c.__len__()):
         task_queue.put(i)
 
     inputs = []
     for i in range(number_of_processes):
-        inputs.append([config, embedding_memory, distance_memory, task_queue, relaxation_memory, lamb])
+        inputs.append([config, embedding_memory, distance_memory, task_queue, progress_queue, relaxation_memory, lamb])
+
+    progress = Process(target=_progress_bar, args=(progress_queue, task_queue.qsize()))
+    progress.start()
 
     with pool as p:
         _ = p.starmap(score_dist, inputs)
+
+    progress.join()
 
     res = np.mean(buf, axis=1)
     IS_i = [res[i] for i in range(res.shape[0])]

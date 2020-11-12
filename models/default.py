@@ -1,7 +1,7 @@
 from .abstract import Model
 from interpretability.core.config import Config
 import numpy as np
-from multiprocessing import cpu_count, Pool
+from multiprocessing import cpu_count, Pool, Process
 from multiprocessing.shared_memory import SharedMemory
 import tqdm
 import os
@@ -42,19 +42,26 @@ class DefaultModel(Model):
 
         cores = cpu_count()
 
+        progress_manager = Manager()
+
         task_manager = Manager()
         task_queue = task_manager.Queue()
+        progress_queue = progress_manager.Queue()
 
         for i in range(self.config.embedding.embedding.embedding_memory_shape[1]):
             for j in range(self.config.semantic_categories.categories.i2c.__len__()):
                 task_queue.put((i, j))
 
         # preparing params for multiprocessing jobs
-        params = [["embedding", task_queue, self.config] for _ in range(self.config.project.processes)]
+        params = [["embedding", task_queue, self.config, progress_queue] for _ in range(self.config.project.processes)]
 
+        progress = Process(target=self._progress_bar, args=(progress_queue, task_queue.qsize()))
+        progress.start()
         # run mp
         with Pool(min(self.config.project.processes, cores)) as pool:
             pool.starmap(self._process, params)
+
+        progress.join()
 
         self.config.logger.info(f"Distance matrix calculation is done!")
 
@@ -91,6 +98,7 @@ class DefaultModel(Model):
 
         task_manager = Manager()
         task_queue = task_manager.Queue()
+        progress_queue = progress_manager.Queue()
 
         for i in range(self.config.semantic_categories.categories.i2c.__len__()):
             for j in range(self.config.semantic_categories.categories.i2c.__len__()):
@@ -98,11 +106,16 @@ class DefaultModel(Model):
 
         # Getting the distance space of the transformed space
         # preparing params for multiprocessing jobs
-        params = [["transformed_space", task_queue, self.config] for _ in range(self.config.project.processes)]
+        params = [["transformed_space", task_queue, self.config, progress_queue] for _ in range(self.config.project.processes)]
+
+        progress = Process(target=self._progress_bar, args=(progress_queue, task_queue.qsize()))
+        progress.start()
 
         # run mp
         with Pool(min(self.config.project.processes, cores)) as pool:
             pool.starmap(self._process, params)
+
+        progress.join()
 
         self.config.logger.info("Done!")
 
@@ -172,7 +185,7 @@ class DefaultModel(Model):
                                 f"{os.path.join(self.config.project.models, 'transformed_space_distance_matrix.npy')}")
 
     @staticmethod
-    def _process(source: str, task_queue: Queue, config: Config):
+    def _process(source: str, task_queue: Queue, config: Config, progress_queue: Queue):
         """
         Calculating distance matrix
         :param task_queue:
@@ -207,7 +220,7 @@ class DefaultModel(Model):
             try:
                 task = task_queue.get(True, 0.5)
             except Empty:
-                config.logger.info(f"Task Queue is empty")
+                # config.logger.info(f"Task Queue is empty")
                 break
             # Iterating over the dimensions of the embedding
             # for i in tqdm.trange(w.shape[1], unit='dim', desc=f'PID -> {os.getpid()}\t'):
@@ -232,23 +245,24 @@ class DefaultModel(Model):
             distance, sign = config.distance.function(_p, _q, config)
             distance_matrix[i, j, 0] = distance
             distance_matrix[i, j, 1] = sign
-            config.logger.info(f"Tasks left: {task_queue.qsize()}")
+            progress_queue.put(0)
+            # config.logger.info(f"Tasks left: {task_queue.qsize()}")
         weights_mem.close()
         dist_mem.close()
         w2i_mem.close()
 
-    def _progress_bar(self, queue: Queue, total):
-        i = 0
+    @staticmethod
+    def _progress_bar(queue: Queue, total):
         progress = tqdm.tqdm(total=total, unit='dim', desc=f'Progress\t')
         while True:
             try:
-                task = queue.get(True, 0.5)
-                i += 1
-                progress.update(1)
+                _ = queue.get(True, 0.5)
+                progress.n += 1
+                progress.update(0)
+                if progress.n == total:
+                    break
             except Empty:
                 continue
-            if i == total:
-                break
 
     def relative_frequency(self):
         pass
