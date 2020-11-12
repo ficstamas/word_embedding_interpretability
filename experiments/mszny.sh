@@ -2,7 +2,7 @@
 
 embeddings=("wiki.hu.vec" "wiki.hu.align.vec" "hu.szte.w2v.fasttext.vec")
 path="/data/ficstamas/representations/fasttext/"
-workspace="/data/ficstamas/workspace/mszny"
+workspace="/data/ficstamas/workspace/mszny50000"
 methods=("hellinger_normal" "bhattacharyya_normal")
 vectors=50000
 droprates=(0.4)
