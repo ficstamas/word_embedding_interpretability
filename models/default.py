@@ -42,15 +42,15 @@ class DefaultModel(Model):
 
         cores = cpu_count()
 
-        # task_manager = Manager()
-        # task_queue = task_manager.Queue()
-        #
-        # for i in range(self.config.embedding.embedding.embedding_memory_shape[1]):
-        #     for j in range(self.config.semantic_categories.categories.i2c.__len__()):
-        #         task_queue.put((i, j))
+        task_manager = Manager()
+        task_queue = task_manager.Queue()
+
+        for i in range(self.config.embedding.embedding.embedding_memory_shape[1]):
+            for j in range(self.config.semantic_categories.categories.i2c.__len__()):
+                task_queue.put((i, j))
 
         # preparing params for multiprocessing jobs
-        params = [["embedding", i, self.config] for i in range(self.config.project.processes)]
+        params = [["embedding", task_queue, self.config] for _ in range(self.config.project.processes)]
 
         # run mp
         with Pool(min(self.config.project.processes, cores)) as pool:
@@ -89,9 +89,16 @@ class DefaultModel(Model):
 
         self.config.logger.info("Calculating the distance space of the transformed space...")
 
+        task_manager = Manager()
+        task_queue = task_manager.Queue()
+
+        for i in range(self.config.semantic_categories.categories.i2c.__len__()):
+            for j in range(self.config.semantic_categories.categories.i2c.__len__()):
+                task_queue.put((i, j))
+
         # Getting the distance space of the transformed space
         # preparing params for multiprocessing jobs
-        params = [["transformed_space", i, self.config] for i in range(self.config.project.processes)]
+        params = [["transformed_space", task_queue, self.config] for _ in range(self.config.project.processes)]
 
         # run mp
         with Pool(min(self.config.project.processes, cores)) as pool:
@@ -165,10 +172,10 @@ class DefaultModel(Model):
                                 f"{os.path.join(self.config.project.models, 'transformed_space_distance_matrix.npy')}")
 
     @staticmethod
-    def _process(source: str, modulus: int, config: Config):
+    def _process(source: str, task_queue: Queue, config: Config):
         """
         Calculating distance matrix
-        :param modulus:
+        :param task_queue:
         :param config:
         :return:
         """
@@ -196,33 +203,52 @@ class DefaultModel(Model):
 
         semcat = config.semantic_categories.categories
 
-        # Iterating over the dimensions of the embedding
-        for i in tqdm.trange(w.shape[1], unit='dim', desc=f'PID -> {os.getpid()}\t'):
-            if i % config.project.processes == modulus:
-                dimension = w[:, i]
-                # Iterating over the semantic categories
-                for j in range(config.semantic_categories.categories.i2c.__len__()):
-                    word_indexes = np.zeros(shape=[w.shape[0], ], dtype=np.bool)
-                    # One-hot selection vector for in-category words
-                    for word in semcat.vocab[semcat.i2c[j]]:
-                        try:
-                            word_indexes[w2i[word]] = True
-                        except KeyError:
-                            continue
-                        except IndexError:
-                            continue
+        while True:
+            try:
+                task = task_queue.get(True, 0.5)
+            except Empty:
+                config.logger.info(f"Task Queue is empty")
+                break
+            # Iterating over the dimensions of the embedding
+            # for i in tqdm.trange(w.shape[1], unit='dim', desc=f'PID -> {os.getpid()}\t'):
+            i = task[0]
+            j = task[1]
+            dimension = w[:, i]
+            word_indexes = np.zeros(shape=[w.shape[0], ], dtype=np.bool)
+            # One-hot selection vector for in-category words
+            for word in semcat.vocab[semcat.i2c[j]]:
+                try:
+                    word_indexes[w2i[word]] = True
+                except KeyError:
+                    continue
+                except IndexError:
+                    continue
 
-                    # Populate P with category word weights
-                    _p = dimension[word_indexes]
-                    # Populate Q with out of category word weights
-                    _q = dimension[~word_indexes]
-                    # calculating distance
-                    distance, sign = config.distance.function(_p, _q, config)
-                    distance_matrix[i, j, 0] = distance
-                    distance_matrix[i, j, 1] = sign
+            # Populate P with category word weights
+            _p = dimension[word_indexes]
+            # Populate Q with out of category word weights
+            _q = dimension[~word_indexes]
+            # calculating distance
+            distance, sign = config.distance.function(_p, _q, config)
+            distance_matrix[i, j, 0] = distance
+            distance_matrix[i, j, 1] = sign
+            config.logger.info(f"Tasks left: {task_queue.qsize()}")
         weights_mem.close()
         dist_mem.close()
         w2i_mem.close()
+
+    def _progress_bar(self, queue: Queue, total):
+        i = 0
+        progress = tqdm.tqdm(total=total, unit='dim', desc=f'Progress\t')
+        while True:
+            try:
+                task = queue.get(True, 0.5)
+                i += 1
+                progress.update(1)
+            except Empty:
+                continue
+            if i == total:
+                break
 
     def relative_frequency(self):
         pass
