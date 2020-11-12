@@ -6,6 +6,8 @@ from multiprocessing.shared_memory import SharedMemory
 import tqdm
 import os
 from sklearn.preprocessing import StandardScaler, Normalizer
+from multiprocessing import Queue, Manager
+from queue import Empty
 
 
 class DefaultModel(Model):
@@ -39,6 +41,13 @@ class DefaultModel(Model):
             self._memory_initiated = True
 
         cores = cpu_count()
+
+        # task_manager = Manager()
+        # task_queue = task_manager.Queue()
+        #
+        # for i in range(self.config.embedding.embedding.embedding_memory_shape[1]):
+        #     for j in range(self.config.semantic_categories.categories.i2c.__len__()):
+        #         task_queue.put((i, j))
 
         # preparing params for multiprocessing jobs
         params = [["embedding", i, self.config] for i in range(self.config.project.processes)]
@@ -79,6 +88,7 @@ class DefaultModel(Model):
         self.config.logger.info("Transformed space calculated!")
 
         self.config.logger.info("Calculating the distance space of the transformed space...")
+
         # Getting the distance space of the transformed space
         # preparing params for multiprocessing jobs
         params = [["transformed_space", i, self.config] for i in range(self.config.project.processes)]
