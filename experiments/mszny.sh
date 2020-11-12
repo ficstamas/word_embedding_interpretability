@@ -52,7 +52,7 @@ do
           if [ -d "$cp" ]; then
             continue
           fi
-          python interpretability_cli.py --embedding_path "${path}${embedding}_K${K}_l${lambda}_top200000_NormTrue.emb" --lines_to_read "${vectors}" --smc_path 'data/semcat/semcat_en-de-hu.json' --smc_method 'random' --smc_rate "$droprate" --seed 0 --processes $proc --distance "$method" --workspace $workspace --name "${embedding}-${method}-K${K}-l${lambda}-dr${droprate}_sparse" -save --accuracy "word_retrieval_test";
+          python interpretability_cli.py --embedding_path "${path}${embedding}_K${K}_l${lambda}_top50000_NormTrue.emb" --lines_to_read "${vectors}" --smc_path 'data/semcat/semcat_en-de-hu.json' --smc_method 'random' --smc_rate "$droprate" --seed 0 --processes $proc --distance "$method" --workspace $workspace --name "${embedding}-${method}-K${K}-l${lambda}-dr${droprate}_sparse" -save --accuracy "word_retrieval_test";
         done
 
         for ir in ${irdroprates[*]}
@@ -113,7 +113,7 @@ do
           if [ -d "$cp" ]; then
             continue
           fi
-          python interpretability_cli.py --embedding_path "${path}${embedding}_K${K}_l${lambda}_top200000_NormTrue.emb" --lines_to_read "${vectors}" --smc_path 'data/semcat/semcat_en-de-hu.json' --smc_method 'random' --smc_rate "$droprate" --seed 0 --processes $proc --distance "$method" --workspace $workspace --name "${embedding}-${method}-K${K}-l${lambda}-dr${droprate}_sparse" -save --accuracy "word_retrieval_test";
+          python interpretability_cli.py --embedding_path "${path}${embedding}_K${K}_l${lambda}_top50000_NormTrue.emb" --lines_to_read "${vectors}" --smc_path 'data/semcat/semcat_en-de-hu.json' --smc_method 'random' --smc_rate "$droprate" --seed 0 --processes $proc --distance "$method" --workspace $workspace --name "${embedding}-${method}-K${K}-l${lambda}-dr${droprate}_sparse" -save --accuracy "word_retrieval_test";
         done
 
         for ir in ${irdroprates[*]}
