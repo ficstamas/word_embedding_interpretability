@@ -45,8 +45,10 @@ def closed_hellinger_distance(p: np.ndarray, q: np.ndarray, config) -> Tuple[int
 
     if var_1 == 0:
         var_1 = 1e-5
+        std_1 = np.sqrt(1e-5)
     if var_2 == 0:
         var_2 = 1e-5
+        std_2 = np.sqrt(1e-5)
 
     # Mean of p and q
     mu_1 = np.mean(p)
