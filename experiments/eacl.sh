@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-workspace="/data/ficstamas/workspace/eacl-sensebert-avgSubToken/"
-proc=40
+workspace="/data/ficstamas/workspace/eacl/"
+proc=30
 semcor="/data/berend/WSD_Evaluation_Framework/Training_Corpora/SemCor/semcor.data.xml"
 test_words="/data/berend/WSD_Evaluation_Framework/Evaluation_Datasets/ALL/ALL.data.xml"
 
-path="/data/berend/representations/"
+path="/data/berend/representations_unreduced/"
 
-dimensions=("1500" "2000" "3000")
+dimensions=("3000")
 complexities=("base" "large")
-lambdas=("0.05" "0.1" "0.2")
+lambdas=("0.1")
 models=("bert" "sensebert")
 methods=("hellinger_normal" "bhattacharyya_normal")
 sm=("semcor" "ALL")

@@ -4,6 +4,8 @@ import numpy as np
 from multiprocessing.shared_memory import SharedMemory
 import tqdm
 import os
+from multiprocessing import Queue, Manager
+from queue import Empty
 
 
 class ContextualModel(DefaultModel):
@@ -12,7 +14,7 @@ class ContextualModel(DefaultModel):
         self.relative_frequency_matrix = np.zeros(self.config.semantic_categories.categories.i2c.__len__())
 
     @staticmethod
-    def _process(source: str, modulus: int, config: Config):
+    def _process(source: str, task_queue: Queue, config: Config, progress_queue: Queue):
         """
         Calculating distance matrix
         :param modulus:
@@ -44,30 +46,37 @@ class ContextualModel(DefaultModel):
         semcat = config.semantic_categories.categories
 
         # Iterating over the dimensions of the embedding
-        for i in tqdm.trange(w.shape[1], unit='dim', desc=f'PID -> {os.getpid()}\t'):
-            if i % config.project.processes == modulus:
-                dimension = w[:, i]
-                # Iterating over the semantic categories
-                for j in range(config.semantic_categories.categories.i2c.__len__()):
-                    word_indexes = np.zeros(shape=[w.shape[0], ], dtype=np.bool)
-                    # One-hot selection vector for in-category words
-                    for k in range(w.shape[0]):
-                        try:
-                            if i2w[str(k)] == semcat.i2c[j]:
-                                word_indexes[k] = True
-                        except KeyError:
-                            continue
-                        except IndexError:
-                            continue
+        while True:
+            try:
+                task = task_queue.get(True, 0.5)
+            except Empty:
+                # config.logger.info(f"Task Queue is empty")
+                break
+            # Iterating over the dimensions of the embedding
+            # for i in tqdm.trange(w.shape[1], unit='dim', desc=f'PID -> {os.getpid()}\t'):
+            i = task[0]
+            j = task[1]
+            dimension = w[:, i]
+            # Iterating over the semantic categories
+            word_indexes = np.zeros(shape=[w.shape[0], ], dtype=np.bool)
+            # One-hot selection vector for in-category words
+            for k in range(w.shape[0]):
+                try:
+                    if i2w[str(k)] == semcat.i2c[j]:
+                        word_indexes[k] = True
+                except KeyError:
+                    continue
+                except IndexError:
+                    continue
 
-                    # Populate P with category word weights
-                    _p = dimension[word_indexes]
-                    # Populate Q with out of category word weights
-                    _q = dimension[~word_indexes]
-                    # calculating distance
-                    distance, sign = config.distance.function(_p, _q, config)
-                    distance_matrix[i, j, 0] = distance
-                    distance_matrix[i, j, 1] = sign
+            # Populate P with category word weights
+            _p = dimension[word_indexes]
+            # Populate Q with out of category word weights
+            _q = dimension[~word_indexes]
+            # calculating distance
+            distance, sign = config.distance.function(_p, _q, config)
+            distance_matrix[i, j, 0] = distance
+            distance_matrix[i, j, 1] = sign
         weights_mem.close()
         dist_mem.close()
 
