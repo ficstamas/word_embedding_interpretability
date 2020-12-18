@@ -77,6 +77,7 @@ class ContextualModel(DefaultModel):
             distance, sign = config.distance.function(_p, _q, config)
             distance_matrix[i, j, 0] = distance
             distance_matrix[i, j, 1] = sign
+            progress_queue.put(0)
         weights_mem.close()
         dist_mem.close()
 
