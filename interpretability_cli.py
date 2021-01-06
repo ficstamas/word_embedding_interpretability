@@ -15,18 +15,18 @@ import sys
 import logging
 
 mpl_logger = logging.getLogger('matplotlib')
-mpl_logger.setLevel(logging.WARNING)
+mpl_logger.setLevel(logging.INFO)
 
 
 if __name__ == '__main__':
     freeze_support()  # for Windows support
-    parser = ArgumentParser(description='Glove interpretibility')
+    parser = ArgumentParser(description='Interpretable Embedding generation')
 
     # Embedding
     parser.add_argument("--embedding_path", type=str, required=True,
                         help="Path to the embedding file")
     parser.add_argument("-dense", action='store_true', required=False,
-                        help="Mark dense embeddings")
+                        help="Use it if it is a dense embedding space")
     parser.add_argument("-numpy", action='store_true', required=False,
                         help="Use if the embedding is stored in npy or npz format")
     parser.add_argument("--lines_to_read", type=int, required=False,
@@ -40,23 +40,24 @@ if __name__ == '__main__':
     parser.add_argument("--smc_method", type=str, required=False,
                         help="Method to drop words from semantic categories. Available: ['random', 'category_center']")
     parser.add_argument("--smc_rate", type=float, required=False,
-                        help="The percent to drop. (Default: 0.0)")
+                        help="The percentage of words to drop. (Default: 0.0)")
     parser.add_argument("--seed", type=int, required=False,
                         help="Seed for random number generation (Default: None)")
 
     # KDE parameters
     parser.add_argument("--kde_kernel", type=str, required=False,
-                        help="The kernel for kernel density estimation. (Default: gaussian)")
+                        help="The kernel for kernel density estimation. Only applied when using the distances with "
+                             "their continuous form (Default: gaussian)")
     parser.add_argument("--kde_bandwidth", type=float, required=False,
                         help="The bandwidth for kernel density estimation. (Default: 0.2)")
 
     # Distance
     parser.add_argument("--distance", type=str, required=True,
-                        help="Method to measure distance. Available: "
+                        help="The applied distance. Available: "
                              "['bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal']")
     parser.add_argument("--distance_weight", type=str, required=False,
                         choices=["none", "relative_frequency"],
-                        help="The way of weighting over distances")
+                        help="Weight of distances")
 
     # Project
     parser.add_argument("--workspace", type=str, required=True,
@@ -68,30 +69,34 @@ if __name__ == '__main__':
 
     # Used Model and Validation
     parser.add_argument("--model", type=str, required=False,
-                        help="The used model for calculation")
-    parser.add_argument("-load",action='store_true', required=False,
-                        help="Calculate interpretability scores")
+                        help="The used model for calculation. Available: 'default', 'contextual', "
+                             "'mcmc' (Default: 'default')")
+    parser.add_argument("-load", action='store_true', required=False,
+                        help="Loads existing model")
     parser.add_argument("-save", action='store_true', required=False,
-                        help="Calculate interpretability scores")
+                        help="Saves current model")
     parser.add_argument("-interpretability", action='store_true', required=False,
-                        help="Calculate interpretability scores")
+                        help="Calculates interpretability scores")
     parser.add_argument("--accuracy", type=str, required=False,
-                        help="Calculate accuracy of the model. ['word_retrieval_test', 'accuracy']")
+                        help="Calculates accuracy of the model. ['word_retrieval_test', 'accuracy']")
     parser.add_argument("--relaxation", type=int, required=False,
-                        help="Lambda parameter for interpretability calculation. The higher value means more "
+                        help="Relaxation parameter for interpretability calculation. The higher value means more "
                              "relaxation (Default: 10)")
-    parser.add_argument("--test_words", type=str, required=False,
-                        help="Path to the test words")
-    parser.add_argument("--test_words_weights", type=str, required=False,
-                        help="Path to NumPy array which contains the weights for the test words")
+
+    parser.add_argument("--test", type=str, required=False,
+                        help="Path to the test words. (only used by contextual models atm.)")
+    parser.add_argument("--test_weights", type=str, required=False,
+                        help="Path to NumPy array which contains the weights for the test words. "
+                             "(only used by contextual models atm.)")
 
     # MCMC model params
     parser.add_argument("--mcmc_acceptance", type=int, required=False,
                         help="The minimum number of accepted estimation during Metropolis–Hastings algorithm "
                              "(Default: 200)")
     parser.add_argument("--mcmc_noise", type=float, required=False,
-                        help="The percent of noise to every semantic category. Calculated based on every semantic "
-                             "categories size (Default: 0.2)")
+                        help="The percentage of noise appliead to every semantic category. "
+                             "Calculated based on every semantic "
+                             "category's size (Default: 0.2)")
 
     parser.set_defaults(lines_to_read=-1, dense=False, smc_method='random', seed=None,
                         smc_rate=0.0, kde_kernel="gaussian", kde_bandwidth=0.2, name='default', processes=2,
@@ -114,8 +119,8 @@ if __name__ == '__main__':
     config.project.processes = args.processes
     config.model.mcmc_acceptance = args.mcmc_acceptance
     config.model.mcmc_noise = args.mcmc_noise
-    config.data.test_word_weights_path = args.test_words_weights
-    config.semantic_categories.test_words_path = args.test_words
+    config.data.test_word_weights_path = args.test_weights
+    config.semantic_categories.test_words_path = args.test
 
     config.log_config()
 

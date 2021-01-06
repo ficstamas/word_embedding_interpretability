@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 embeddings=("wiki.hu.vec" "wiki.hu.align.vec" "hu.szte.w2v.fasttext.vec")
-path="/data/ficstamas/representations/fasttext/"
-workspace="/data/ficstamas/workspace/mszny50000"
+path="/data/ficstamas/representations/fasttext/" # Embeddings
+workspace="/data/ficstamas/workspace/mszny50000" # Output workspace
 methods=("hellinger_normal" "bhattacharyya_normal")
 vectors=50000
 droprates=(0.4)
 irdroprates=(0.0)
-proc=40
+proc=40 # Utilized processes
 cd ../
 
 for embedding in ${embeddings[*]}

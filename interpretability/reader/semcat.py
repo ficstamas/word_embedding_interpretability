@@ -205,5 +205,28 @@ def semcat_reader(config: Config) -> SemCat:
     return SemCat(vocab, w2i, i2w, dropped_words)
 
 
+def semcat_reader_nc(path, drop_method, load_method="semcat", drop_rate=0.0, seed=0) -> SemCat:
+    """
+    Loading semantic categories without the explicit need of the Config object
+    :param path: Path to Semantic Categories
+    :param load_method: Just use semcat
+    :param drop_method:
+    :param drop_rate:
+    :param seed:
+    :return:
+    """
+    config = Config(memory_prefix=f"temp{random.random()*50000 % 50000}")
+    params = {
+        "test_words_path": None,
+        "path": path,
+        "load_method": load_method,
+        "drop_method": drop_method,
+        "drop_rate": drop_rate,
+        "seed": seed
+    }
+    config.semantic_categories.from_dict(params)
+    return semcat_reader(config)
+
+
 def _distance(x: np.ndarray, y: np.ndarray):
     return np.sqrt(np.sum(np.power(x-y, 2)))
