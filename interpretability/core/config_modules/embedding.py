@@ -13,7 +13,7 @@ class Embedding:
     @property
     def embedding(self) -> EmbeddingObject:
         """
-        Returns the Embedding object ('loaders/embedding.py')
+        Returns the Embedding object ('reader/embedding.py')
         :return:
         """
         return self._object

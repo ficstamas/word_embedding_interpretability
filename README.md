@@ -15,7 +15,7 @@ Provides a tool to generate interpretable word vectors, from existing embedding 
 - [Citation](#citation)
 
 
-#Requirements
+# Requirements
 
 Python 3.8+
 
@@ -107,7 +107,7 @@ interpretability_cli.py [-h] --embedding_path <EMBEDDING_PATH>
   - _accuracy_ - Can use additional relaxation parameter after an @ symbol e.g.: accuracy@10 (Only available for contextual models atm.)
 
 
-#Reproducing the results from the papers
+# Reproducing the results from the papers
 
 ## TSD
 The paper which was submitted to the **23rd International Conference on Text, Speech and Dialogue** conference is available [here](docs/tsd_paper.pdf)
@@ -124,7 +124,9 @@ To recreate the results from the MSZNY paper, download the following embeddings:
 - Szeged Word Vectors
 - [Semantic Categories](https://github.com/ficstamas/multilingual_semantic_categories/blob/master/categories/semcat_en-de-hu.json)
 
-Then after changing some parameters in [mszny.sh](experiments/mszny.sh) you can run the script.
+We generated the sparse embedding spaces with the following [script](https://github.com/begab/interpretability_aaai2020/blob/master/src/sparse_coding/sparse_coding.py). Parameters can be found in [mszny_sparse.sh](experiments/mszny_sparse.sh).
+
+After changing some parameters in [mszny.sh](experiments/mszny.sh) you can run the script.
 <br>
 Parameters to change:
 - _path_ - which points at the folder which contains the embeddings
