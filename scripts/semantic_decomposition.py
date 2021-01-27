@@ -57,11 +57,11 @@ def plot_semantic_decomposition(ax, semcat: str, input_file: str, embedding_path
     ax.set_xlabel('')
 
 
-def main():
+def main(qword=None):
     plt.rcdefaults()
     fig, axs = plt.subplots(2, 3)
     fig.set_size_inches(15, 7)
-    word = "ember"
+    word = qword
 
     plot_semantic_decomposition(axs[1][0],
                                 "../data/semcat/semcat_en-de-hu.json",
@@ -105,8 +105,9 @@ def main():
     axs[0][2].set_title("Szeged")
     # fig.tight_layout() bbox_inches="tight" pad=0.4, w_pad=0.5, h_pad=1.0
     fig.tight_layout(rect=[0, 0.03, 1, 0.95])
-    plt.savefig("semantic_decomposition_ember.pdf", )
+    plt.savefig(f"semantic_decomposition_{word}.pdf", )
 
 
 if __name__ == '__main__':
-    main()
+    for w in ["ember", "autó", "katona", "ablak", "szám", "jános"]:
+        main(w)

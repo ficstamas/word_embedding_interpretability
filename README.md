@@ -116,12 +116,12 @@ GloVe can be downloaded from [here](http://nlp.stanford.edu/data/glove.6B.zip) a
 
 Run [tsd_experiments.sh](experiments/tsd_expriments.sh) after changing the _glove_path_ and _semcat_path_ variables. Furthermore change the _proc_ variable according to your CPU cores (Default: 30), but it is not going to spawn/fork more processes than the available number of physical cores.
 
-## MSZNY (Conference on Hungarian Computational Linguistics)
-To recreate the results from the MSZNY paper, download the following embeddings:
+## MSZNY2021 (Conference on Hungarian Computational Linguistics)
+To reproduce the results from the MSZNY paper, download the following embeddings:
 
 - [Hungarian Fasttext (Wiki)](https://dl.fbaipublicfiles.com/fasttext/vectors-wiki/wiki.hu.vec)
 - [Hungarian Fasttext Aligned (Wiki)](https://dl.fbaipublicfiles.com/fasttext/vectors-aligned/wiki.hu.align.vec)
-- Szeged Word Vectors
+- [Szeged Word Vectors](http://www.inf.u-szeged.hu/~szantozs/fasttext/)
 - [Semantic Categories](https://github.com/ficstamas/multilingual_semantic_categories/blob/master/categories/semcat_en-de-hu.json)
 
 We generated the sparse embedding spaces with the following [script](https://github.com/begab/interpretability_aaai2020/blob/master/src/sparse_coding/sparse_coding.py). Parameters can be found in [mszny_sparse.sh](experiments/mszny_sparse.sh).
@@ -129,7 +129,7 @@ We generated the sparse embedding spaces with the following [script](https://git
 After changing some parameters in [mszny.sh](experiments/mszny.sh) you can run the script.
 <br>
 Parameters to change:
-- _path_ - which points at the folder which contains the embeddings
+- _path_ - points at the folder which contains the embeddings
 - _embeddings_ - if the name of the embeddings have changed
 - _workspace_ - to set the output path
 - _proc_ - which defines the number of utilized processes
