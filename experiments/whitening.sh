@@ -9,7 +9,7 @@ sm=("semcor" "ALL")
 output_path="/data/ficstamas/representations/whitened/"
 
 
-cd ../scripts || exit ;
+cd ../scripts/ || exit 1;
 
 # bert
 i=0
@@ -21,8 +21,6 @@ do
     do
       for model in ${models[*]}
       do
-        for method in ${methods[*]}
-        do
 
           file=""
           layer=""
@@ -60,7 +58,6 @@ do
           python whitening.py --matrix "$train" --output_folder "$output_path";
           echo "$i/128 -- $?" >> "progress.txt";
 
-        done
       done
     done
   done
@@ -72,9 +69,6 @@ for complexity in ${complexities[*]}
   do
     for model in ${models[*]}
     do
-        for method in ${methods[*]}
-        do
-
           file=""
           layer=""
           train=""
@@ -110,8 +104,6 @@ for complexity in ${complexities[*]}
           i=$((i+1));
           python whitening.py --matrix "$train" --output_folder "$output_path";
           echo "$i/128 -- $?" >> "progress.txt";
-
-        done
     done
   done
 
