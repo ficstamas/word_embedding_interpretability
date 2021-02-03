@@ -56,6 +56,7 @@ do
           echo "=============================================";
           i=$((i+1));
           python whitening.py --matrix "$train" --output_folder "$output_path";
+          python whitening.py --matrix "$test" --output_folder "$output_path";
           echo "$i/128 -- $?" >> "progress.txt";
 
       done
@@ -103,6 +104,7 @@ for complexity in ${complexities[*]}
           echo "=============================================";
           i=$((i+1));
           python whitening.py --matrix "$train" --output_folder "$output_path";
+          python whitening.py --matrix "$test" --output_folder "$output_path";
           echo "$i/128 -- $?" >> "progress.txt";
     done
   done
