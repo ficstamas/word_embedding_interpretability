@@ -53,7 +53,6 @@ do
             test="${path}sensebert-${complexity}-uncased/${file/\#\#REP\#\#/${sm[1]}}"
             name="sensebert-${complexity}-uncased_layer-${layer}_sparse_lda-${lambda}_K${dimension}_${method}"
           fi
-          echo "=============================================";
           i=$((i+1));
           python whitening.py --matrix "$train" --output_folder "$output_path";
           python whitening.py --matrix "$test" --output_folder "$output_path";
@@ -101,7 +100,6 @@ for complexity in ${complexities[*]}
             test="${path}sensebert-${complexity}-uncased/${file/\#\#REP\#\#/${sm[1]}}"
             name="sensebert-${complexity}-uncased_layer-${layer}_dense_${method}"
           fi
-          echo "=============================================";
           i=$((i+1));
           python whitening.py --matrix "$train" --output_folder "$output_path";
           python whitening.py --matrix "$test" --output_folder "$output_path";

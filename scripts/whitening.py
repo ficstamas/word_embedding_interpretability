@@ -3,6 +3,11 @@ from argparse import ArgumentParser
 import os
 from scipy import sparse as sp
 
+import logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S')
+
 
 def whiten(X: np.ndarray, method='zca'):
     """
@@ -49,20 +54,29 @@ def main():
 
     args = argument_parser.parse_args()
 
+    logging.info(f"Whitening ({args.method}) file {args.matrix}")
+
     matrix_path: str
     matrix_path = args.matrix
     matrix_whitened = None
-    if matrix_path.endswith(".npy"):
-        matrix_whitened = whiten(np.load(matrix_path), method=args.method)
-    elif matrix_path.endswith(".npz"):
-        matrix_whitened = whiten(sp.load_npz(matrix_path).toarray(), method=args.method)
+    try:
+        if matrix_path.endswith(".npy"):
+            matrix_whitened = whiten(np.load(matrix_path), method=args.method)
+        elif matrix_path.endswith(".npz"):
+            matrix_whitened = whiten(sp.load_npz(matrix_path).toarray(), method=args.method)
+    except ValueError as ve:
+        logging.error(str(ve))
+        logging.error(f"Error occurred during the whitening of file: {args.method}")
 
     if args.output_folder is None:
         output_path = matrix_path[:-4] + f"_whitened-{args.method}.npy"
         np.save(output_path, matrix_whitened)
     else:
         filename = os.path.basename(matrix_path)[:-4] + f"_whitened-{args.method}.npy"
-        np.save(os.path.join(args.output_folder, filename), matrix_whitened)
+        output_path = os.path.join(args.output_folder, filename)
+        np.save(output_path, matrix_whitened)
+
+    logging.info(f"Done, saved to {output_path}\n")
 
 
 if __name__ == '__main__':
