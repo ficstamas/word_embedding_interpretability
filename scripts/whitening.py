@@ -1,6 +1,7 @@
 import numpy as np
 from argparse import ArgumentParser
 import os
+from scipy import sparse as sp
 
 
 def whiten(X: np.ndarray, method='zca'):
@@ -54,7 +55,7 @@ def main():
     if matrix_path.endswith(".npy"):
         matrix_whitened = whiten(np.load(matrix_path), method=args.method)
     elif matrix_path.endswith(".npz"):
-        matrix_whitened = whiten(np.loadz(matrix_path).toarray(), method=args.method)
+        matrix_whitened = whiten(sp.load_npz(matrix_path).toarray(), method=args.method)
 
     if args.output_folder is None:
         output_path = matrix_path[:-4] + f"_whitened-{args.method}.npy"
