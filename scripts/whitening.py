@@ -1,5 +1,6 @@
 import numpy as np
 from argparse import ArgumentParser
+import os
 
 
 def whiten(X: np.ndarray, method='zca'):
@@ -43,6 +44,7 @@ def main():
     argument_parser.add_argument("--matrix", type=str, required=True)
     argument_parser.add_argument("--method", type=str, required=False, choices=['zca', 'pca', 'cholesky',
                                                                                 'zca_cor', 'pca_cor'], default='zca')
+    argument_parser.add_argument("--output_folder", type=str, required=False, default=None)
 
     args = argument_parser.parse_args()
 
@@ -54,8 +56,12 @@ def main():
     elif matrix_path.endswith(".npz"):
         matrix_whitened = whiten(np.loadz(matrix_path).toarray(), method=args.method)
 
-    output_path = matrix_path[:-4] + f"_whitened-{args.method}.npy"
-    np.save(output_path, matrix_whitened)
+    if args.output_folder is None:
+        output_path = matrix_path[:-4] + f"_whitened-{args.method}.npy"
+        np.save(output_path, matrix_whitened)
+    else:
+        filename = os.path.basename(matrix_path)[:-4] + f"_whitened-{args.method}.npy"
+        np.save(os.path.join(args.output_folder, filename), matrix_whitened)
 
 
 if __name__ == '__main__':
