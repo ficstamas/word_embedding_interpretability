@@ -11,7 +11,7 @@ Provides a tool to generate interpretable word vectors, from existing embedding 
 - [Usage](#usage)
 - [Reproduction](#reproducing-the-results-from-the-papers)
   - [TSD](#tsd)
-  - [MSZNY](#mszny-conference-on-hungarian-computational-linguistics)
+  - [MSZNY](#mszny2021-conference-on-hungarian-computational-linguistics)
 - [Citation](#citation)
 
 
@@ -44,6 +44,7 @@ interpretability_cli.py [-h] --embedding_path <EMBEDDING_PATH>
                                [--model MODEL] 
                                [-load]
                                [-save] 
+                               [-overwrite]
                                [-interpretability]
                                [--accuracy ACCURACY] 
                                [--relaxation RELAXATION]
@@ -58,6 +59,7 @@ interpretability_cli.py [-h] --embedding_path <EMBEDDING_PATH>
 - **processes** - The maximum number of processes utilized (It's capped to the number of available physical cores if more than that is provided)
 - **save** - Save the model
 - **load** - Load a saved model
+- **overwrite** - Whether to overwrite existing projects (If not used and a project exists at the given path then the program terminates with exit code 0)
 - **workspace** - A workspace is created at the provided path (**Required**)
 - **name** - Name of the experiment (Creates a folder with the provided name in the workspace folder)
 - **model** - Model used for interpretable embedding calculation

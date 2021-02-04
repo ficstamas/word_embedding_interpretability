@@ -75,6 +75,8 @@ if __name__ == '__main__':
                         help="Loads existing model")
     parser.add_argument("-save", action='store_true', required=False,
                         help="Saves current model")
+    parser.add_argument("-overwrite", action='store_true', required=False,
+                        help="Whether to overwrite existing projects")
     parser.add_argument("-interpretability", action='store_true', required=False,
                         help="Calculates interpretability scores")
     parser.add_argument("--accuracy", type=str, required=False,
@@ -103,14 +105,14 @@ if __name__ == '__main__':
                         model="default", interpretability=False, accuracy=None, load=False, save=False,
                         relaxation=10,
                         mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False, test_word_weights=None,
-                        distance_weight=None)
+                        distance_weight=None, overwrite=False)
 
     args = parser.parse_args()
 
     config = Config(memory_prefix=None)
 
     # Setting every parameter
-    config.set_project_path(args.workspace, args.name)
+    config.set_project_path(args.workspace, args.name, args.overwrite)
     config.set_embedding(args.embedding_path, args.dense, args.lines_to_read)
     config.embedding.numpy = args.numpy
     config.set_semantic_categories(args.smc_path, args.smc_loader, args.smc_method, args.smc_rate, args.seed)

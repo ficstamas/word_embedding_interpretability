@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 path="/data/berend/representations_unreduced/"
 
-dimensions=("1500" "2000" "3000")
+dimensions=("1500" "3000")
 complexities=("base" "large")
 lambdas=("0.05" "0.1" "0.2")
 models=("bert" "sensebert")

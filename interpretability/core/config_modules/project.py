@@ -14,6 +14,7 @@ class Project:
         self.models = None
         self.results = None
         self.processes = None
+        self._overwrite = False
         self._structure_generated = False
 
     @property
@@ -23,6 +24,14 @@ class Project:
     @property
     def name(self):
         return self._name
+
+    @property
+    def overwrite(self):
+        return self._overwrite
+
+    @overwrite.setter
+    def overwrite(self, val=False):
+        self._overwrite = val
 
     @workspace.setter
     def workspace(self, val):
@@ -56,7 +65,11 @@ class Project:
             logging.info(f"Project directory created at: {self.project}")
         except FileExistsError:
             logging.info(f"A project exists at: {self.project}")
-            logging.info(f"Every file is going to be overwritten in this directory!")
+            if self.overwrite:
+                logging.info(f"Every file is going to be overwritten in this directory!")
+            else:
+                logging.info(f"You used flag to prevent the project to be overwritten, so we are terminating now...")
+                quit(0)
         # generating dirs
 
         self.logs = os.path.join(self.project, "logs")

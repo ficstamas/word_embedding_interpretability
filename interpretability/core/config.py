@@ -54,7 +54,8 @@ class Config(metaclass=Singleton):
         else:
             self.semantic_categories.file_format = "dict"
 
-    def set_project_path(self, path: str, name: str):
+    def set_project_path(self, path: str, name: str, overwrite: bool):
+        self.project.overwrite = overwrite
         self.project.workspace = os.path.join(os.getcwd(), path)
         self.project.name = name
 
