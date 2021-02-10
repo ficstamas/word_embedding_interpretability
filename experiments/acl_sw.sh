@@ -5,7 +5,7 @@ proc=40
 semcor="/data/berend/WSD_Evaluation_Framework/Training_Corpora/SemCor/semcor.data.xml"
 test_words="/data/berend/WSD_Evaluation_Framework/Evaluation_Datasets/ALL/ALL.data.xml"
 
-path="/data/berend/representations/"
+path="/data/ficstamas/representations/whitened/"
 
 dimensions=("1500" "3000")
 complexities=("base" "large")

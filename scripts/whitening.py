@@ -33,12 +33,12 @@ def whiten(X: np.ndarray, method='zca'):
             W = np.linalg.cholesky(np.dot(U, np.dot(np.diag(1.0 / (Lambda + 1e-5)), U.T))).T
     elif method in ['zca_cor', 'pca_cor']:
         V_sqrt = np.diag(np.std(X, axis=0))
-        P = np.dot(np.dot(np.linalg.inv(V_sqrt), Sigma), np.linalg.inv(V_sqrt))
+        P = np.dot(np.dot(np.linalg.pinv(V_sqrt), Sigma), np.linalg.pinv(V_sqrt))
         G, Theta, _ = np.linalg.svd(P)
         if method == 'zca_cor':
-            W = np.dot(np.dot(G, np.dot(np.diag(1.0 / np.sqrt(Theta + 1e-5)), G.T)), np.linalg.inv(V_sqrt))
+            W = np.dot(np.dot(G, np.dot(np.diag(1.0 / np.sqrt(Theta + 1e-5)), G.T)), np.linalg.pinv(V_sqrt))
         elif method == 'pca_cor':
-            W = np.dot(np.dot(np.diag(1.0 / np.sqrt(Theta + 1e-5)), G.T), np.linalg.inv(V_sqrt))
+            W = np.dot(np.dot(np.diag(1.0 / np.sqrt(Theta + 1e-5)), G.T), np.linalg.pinv(V_sqrt))
     else:
         raise Exception('Whitening method not found.')
 
