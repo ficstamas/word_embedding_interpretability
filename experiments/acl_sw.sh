@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-workspace="/data/ficstamas/workspace/eacl-whitened/"
+
 proc=40
 semcor="/data/berend/WSD_Evaluation_Framework/Training_Corpora/SemCor/semcor.data.xml"
 test_words="/data/berend/WSD_Evaluation_Framework/Evaluation_Datasets/ALL/ALL.data.xml"
@@ -11,8 +11,9 @@ dimensions=("1500" "3000")
 complexities=("base" "large")
 lambdas=("0.05" "0.1" "0.2")
 models=("bert" "sensebert")
-methods=("hellinger_normal" "bhattacharyya_normal")
+methods=("hellinger_normal")
 sm=("semcor" "ALL")
+whitenings=("zca" "zca_cor")
 
 cd ../;
 
@@ -28,7 +29,9 @@ do
       do
         for method in ${methods[*]}
         do
-
+          for white in ${whitenings[*]}
+          do
+          workspace="/data/ficstamas/workspace/eacl-whitened-${white}/"
           file=""
           layer=""
           train=""
@@ -43,7 +46,7 @@ do
             else
               layer="21-22-23-24"
             fi
-            file="semcor.data.xml_bert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_##REP##.data.xml_bert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_whitened-zca.npy"
+            file="semcor.data.xml_bert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_##REP##.data.xml_bert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_whitened-${white}.npy"
             train="${path}${file/\#\#REP\#\#/${sm[0]}}"
             test="${path}${file/\#\#REP\#\#/${sm[1]}}"
             name="bert-${complexity}-uncased_layer-${layer}_sparse_lda-${lambda}_K${dimension}_${method}"
@@ -55,7 +58,7 @@ do
               layer="21-22-23-24"
             fi
 
-            file="semcor.data.xml_sensebert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_##REP##.data.xml_sensebert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_whitened-zca.npy"
+            file="semcor.data.xml_sensebert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_##REP##.data.xml_sensebert-${complexity}-uncased_avg_False_layer_${layer}.npy_normTrue_K${dimension}_lda${lambda}_whitened-${white}.npy"
             train="${path}${file/\#\#REP\#\#/${sm[0]}}"
             test="${path}${file/\#\#REP\#\#/${sm[1]}}"
             name="sensebert-${complexity}-uncased_layer-${layer}_sparse_lda-${lambda}_K${dimension}_${method}"
@@ -63,8 +66,7 @@ do
           echo "=============================================";
           i=$((i+1));
           python interpretability_cli.py --test_weights "$test" --test "$test_words" --embedding_path "$train" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes "$proc" --distance "$method" --model "contextual" --workspace $workspace --name "${name}" -save --accuracy "accuracy@1";
-          echo "$i/128 -- $?" >> "progress.txt";
-
+          done
         done
       done
     done
@@ -79,7 +81,9 @@ for complexity in ${complexities[*]}
     do
         for method in ${methods[*]}
         do
-
+          for white in ${whitenings[*]}
+          do
+          workspace="/data/ficstamas/workspace/eacl-whitened-${white}/"
           file=""
           layer=""
           train=""
@@ -94,7 +98,7 @@ for complexity in ${complexities[*]}
             else
               layer="21-22-23-24"
             fi
-            file="##REP##.data.xml_bert-${complexity}-uncased_avg_False_layer_${layer}_whitened-zca.npy"
+            file="##REP##.data.xml_bert-${complexity}-uncased_avg_False_layer_${layer}_whitened-${white}.npy"
             train="${path}${file/\#\#REP\#\#/${sm[0]}}"
             test="${path}${file/\#\#REP\#\#/${sm[1]}}"
             name="bert-${complexity}-uncased_layer-${layer}_dense_${method}"
@@ -106,16 +110,14 @@ for complexity in ${complexities[*]}
               layer="21-22-23-24"
             fi
 
-            file="##REP##.data.xml_sensebert-${complexity}-uncased_avg_False_layer_${layer}_whitened-zca.npy"
+            file="##REP##.data.xml_sensebert-${complexity}-uncased_avg_False_layer_${layer}_whitened-${white}.npy"
             train="${path}${file/\#\#REP\#\#/${sm[0]}}"
             test="${path}${file/\#\#REP\#\#/${sm[1]}}"
             name="sensebert-${complexity}-uncased_layer-${layer}_dense_${method}"
           fi
-          echo "=============================================";
           i=$((i+1));
           python interpretability_cli.py --test_weights "$test" --test "$test_words" --embedding_path "$train" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes "$proc" --distance "$method" --model "contextual" --workspace $workspace --name "${name}" -save --accuracy "accuracy@1";
-          echo "$i/128 -- $?" >> "progress.txt";
-
+          done
         done
     done
   done

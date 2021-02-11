@@ -54,8 +54,7 @@ do
             test="${path}sensebert-${complexity}-uncased/${file/\#\#REP\#\#/${sm[1]}}"
           fi
           i=$((i+1));
-          python whitening.py --matrix "$train" --output_folder "$output_path" --method "$method";
-          python whitening.py --matrix "$test" --output_folder "$output_path" --method "$method";
+          python whitening.py --matrix "$train" --test "$test" --output_folder "$output_path" --method "$method";
       done
     done
   done
@@ -97,8 +96,7 @@ for complexity in ${complexities[*]}
             test="${path}sensebert-${complexity}-uncased/${file/\#\#REP\#\#/${sm[1]}}"
           fi
           i=$((i+1));
-          python whitening.py --matrix "$train" --output_folder "$output_path" --method "$method";
-          python whitening.py --matrix "$test" --output_folder "$output_path" --method "$method";
+          python whitening.py --matrix "$train" --test "$test" --output_folder "$output_path" --method "$method";
     done
   done
 

@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG,
                     datefmt='%d-%b-%y %H:%M:%S')
 
 
-def whiten(X: np.ndarray, method='zca'):
+def whiten(X: np.ndarray, Y=None, method='zca'):
     """
     Source: https://gist.github.com/joelouismarino/ce239b5601fff2698895f48003f7464b
     Whitens the input matrix X using specified whitening method.
@@ -19,6 +19,7 @@ def whiten(X: np.ndarray, method='zca'):
                 'pca_cor', or 'cholesky'.
     """
     X = X.reshape((-1, np.prod(X.shape[1:])))
+    Y = Y.reshape((-1, np.prod(Y.shape[1:])))
     X_centered = X - np.mean(X, axis=0)
     Sigma = np.dot(X_centered.T, X_centered) / X_centered.shape[0]
     W = None
@@ -42,12 +43,16 @@ def whiten(X: np.ndarray, method='zca'):
     else:
         raise Exception('Whitening method not found.')
 
-    return np.dot(X_centered, W.T)
+    if Y is None:
+        return np.dot(X_centered, W.T), None
+    else:
+        return np.dot(X_centered, W.T), np.dot(Y - np.mean(Y, axis=0), W.T)
 
 
 def main():
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--matrix", type=str, required=True)
+    argument_parser.add_argument("--test", type=str, required=False, default=None)
     argument_parser.add_argument("--method", type=str, required=False, choices=['zca', 'pca', 'cholesky',
                                                                                 'zca_cor', 'pca_cor'], default='zca')
     argument_parser.add_argument("--output_folder", type=str, required=False, default=None)
@@ -59,11 +64,13 @@ def main():
     matrix_path: str
     matrix_path = args.matrix
     matrix_whitened = None
+    test_whitened = None
     try:
         if matrix_path.endswith(".npy"):
-            matrix_whitened = whiten(np.load(matrix_path), method=args.method)
+            matrix_whitened, test_whitened = whiten(np.load(matrix_path), Y=np.load(args.test), method=args.method)
         elif matrix_path.endswith(".npz"):
-            matrix_whitened = whiten(sp.load_npz(matrix_path).toarray(), method=args.method)
+            matrix_whitened, test_whitened = whiten(sp.load_npz(matrix_path).toarray(), Y=sp.load_npz(args.test).toarray(),
+                                                    method=args.method)
     except ValueError as ve:
         logging.error(str(ve))
         logging.error(f"Error occurred during the whitening of file: {args.method}")
@@ -71,12 +78,21 @@ def main():
     if args.output_folder is None:
         output_path = matrix_path[:-4] + f"_whitened-{args.method}.npy"
         np.save(output_path, matrix_whitened)
+        logging.info(f"Done, saved to {output_path}\n")
     else:
         filename = os.path.basename(matrix_path)[:-4] + f"_whitened-{args.method}.npy"
         output_path = os.path.join(args.output_folder, filename)
         np.save(output_path, matrix_whitened)
 
-    logging.info(f"Done, saved to {output_path}\n")
+    if args.test is None:
+        output_path = args.test[:-4] + f"_whitened-{args.method}.npy"
+        np.save(output_path, test_whitened)
+        logging.info(f"Test, saved to {output_path}\n")
+    else:
+        filename = os.path.basename(args.test)[:-4] + f"_whitened-{args.method}.npy"
+        output_path = os.path.join(args.output_folder, filename)
+        np.save(output_path, test_whitened)
+        logging.info(f"Test, saved to {output_path}\n")
 
 
 if __name__ == '__main__':
