@@ -31,7 +31,8 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
     # performing the usual operations
     config.logger.info("Performing L1 normalization...")
 
-    normalized = Normalizer('l1').transform(distances.T).T
+    # normalized = Normalizer('l1').transform(distances.T).T
+    normalized = distances / np.linalg.norm(distances, 1, axis=0)
 
     config.logger.info("Performing sign correction...")
 
@@ -49,7 +50,7 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
     else:
         transformed_space = scaled.dot(sign_corrected) * weight
 
-    if not preprocessed:
+    if preprocessed:
         semcat = config.semantic_categories.categories
 
         freq = np.zeros(semcat.i2c.__len__())
