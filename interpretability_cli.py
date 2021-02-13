@@ -81,9 +81,9 @@ if __name__ == '__main__':
                         help="Calculates interpretability scores")
     parser.add_argument("--accuracy", type=str, required=False,
                         help="Calculates accuracy of the model. ['word_retrieval_test', 'accuracy']")
-    parser.add_argument("-accuracy_preprocessed", action='store_true', type=bool, required=False,
+    parser.add_argument("-accuracy_preprocessed", action='store_true', required=False,
                         help="Whether to apply preprocessing (such as Standardization) on the embedding space")
-    parser.add_argument("-accuracy_recalculate", action='store_true', type=bool, required=False,
+    parser.add_argument("-accuracy_recalculate", action='store_true', required=False,
                         help="Whether to recalculate the cached matrix")
     parser.add_argument("--relaxation", type=int, required=False,
                         help="Relaxation parameter for interpretability calculation. The higher value means more "
@@ -116,6 +116,7 @@ if __name__ == '__main__':
     config = Config(memory_prefix=None)
 
     # Setting every parameter
+    config.project.save = args.save
     config.set_project_path(args.workspace, args.name, args.overwrite)
     config.set_embedding(args.embedding_path, args.dense, args.lines_to_read)
     config.embedding.numpy = args.numpy
