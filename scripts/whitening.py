@@ -83,6 +83,7 @@ def main():
         filename = os.path.basename(matrix_path)[:-4] + f"_whitened-{args.method}.npy"
         output_path = os.path.join(args.output_folder, filename)
         np.save(output_path, matrix_whitened)
+        logging.info(f"Done, saved to {output_path}\n")
 
     if args.test is None:
         output_path = args.test[:-4] + f"_whitened-{args.method}.npy"

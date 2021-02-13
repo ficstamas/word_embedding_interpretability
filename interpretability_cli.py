@@ -81,6 +81,10 @@ if __name__ == '__main__':
                         help="Calculates interpretability scores")
     parser.add_argument("--accuracy", type=str, required=False,
                         help="Calculates accuracy of the model. ['word_retrieval_test', 'accuracy']")
+    parser.add_argument("-accuracy_preprocessed", action='store_true', type=bool, required=False,
+                        help="Whether to apply preprocessing (such as Standardization) on the embedding space")
+    parser.add_argument("-accuracy_recalculate", action='store_true', type=bool, required=False,
+                        help="Whether to recalculate the cached matrix")
     parser.add_argument("--relaxation", type=int, required=False,
                         help="Relaxation parameter for interpretability calculation. The higher value means more "
                              "relaxation (Default: 10)")
@@ -105,7 +109,7 @@ if __name__ == '__main__':
                         model="default", interpretability=False, accuracy=None, load=False, save=False,
                         relaxation=10,
                         mcmc_acceptance=200, mcmc_noise=0.2, smc_loader='semcat', numpy=False, test_word_weights=None,
-                        distance_weight=None, overwrite=False)
+                        distance_weight=None, overwrite=False, accuracy_preprocessed=False, accuracy_recalculate=False)
 
     args = parser.parse_args()
 
@@ -132,6 +136,7 @@ if __name__ == '__main__':
 
     semcat = None
     eval_vector_labels = None
+    word_vector_labels = None
     if config.semantic_categories.load_method == "semcat":
         semcat = semcat_reader(config)
     elif config.semantic_categories.load_method == "old_semcat":
@@ -183,7 +188,10 @@ if __name__ == '__main__':
             word_retrieval_test.accuracy(config)
         elif args.accuracy.startswith('accuracy'):
             relax = int(args.accuracy.split('@')[-1])
-            accuracy.accuracy(eval_vector_labels, relaxation=relax, weight=weight)
+            accuracy.accuracy(eval_vector_labels, relaxation=relax, weight=weight,
+                              preprocessed=args.accuracy_preprocessed,
+                              wt=None if word_vector_labels is None else word_vector_labels,
+                              recalculate=args.accuracy_recalculate)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)

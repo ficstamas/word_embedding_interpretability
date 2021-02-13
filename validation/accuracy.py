@@ -8,7 +8,8 @@ import os
 import sys
 
 
-def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None):
+def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, preprocessed=False, wt=None,
+             recalculate=False):
     if config is None:
         config = Config(access=True)
 
@@ -38,7 +39,20 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None):
 
     config.logger.info("Performing standard scaling...")
 
-    scaled = StandardScaler(copy=True, with_mean=True, with_std=True).fit_transform(config.data.test_word_weights)
+    if not preprocessed:
+        scaled = StandardScaler(copy=True, with_mean=True, with_std=True).fit_transform(config.data.test_word_weights)
+    else:
+        scaled = config.data.test_word_weights
+        semcat = config.semantic_categories.categories
+
+        freq = np.zeros(semcat.i2c.__len__())
+        for key in wt:
+            if wt[key] != '<unknown>':
+                id = semcat.c2i[wt[key]]
+                freq[id] = freq[id] + 1
+
+        freq_normed = freq / np.linalg.norm(freq, 2)
+        scaled = scaled + scaled * freq_normed
 
     if weight is None:
         transformed_space = scaled.dot(sign_corrected)
@@ -55,7 +69,8 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None):
     test_labels = []
     argmax_matrix = None
 
-    if not os.path.exists(os.path.join(config.project.results, f"{config.distance.weight_name}accuracy.npz")):
+    if not os.path.exists(os.path.join(config.project.results, f"{config.distance.weight_name}accuracy.npz")) or \
+            recalculate:
         config.logger.info("Calculating ordered accuracy matrix...")
         j = 0
         for i in tqdm.trange(transformed_space.shape[0]):

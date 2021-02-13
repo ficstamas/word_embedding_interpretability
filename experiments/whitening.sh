@@ -31,7 +31,7 @@ do
           name=""
 
           if [[ "$model" == "bert" ]]; then
-            continue
+
             # bert
             if [[ "$complexity" == "base" ]]; then
               layer="9-10-11-12"
@@ -73,7 +73,7 @@ for complexity in ${complexities[*]}
           name=""
 
           if [[ "$model" == "bert" ]]; then
-            continue
+            
             # bert
             if [[ "$complexity" == "base" ]]; then
               layer="9-10-11-12"

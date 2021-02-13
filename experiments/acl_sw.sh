@@ -65,7 +65,7 @@ do
           fi
           echo "=============================================";
           i=$((i+1));
-          python interpretability_cli.py --test_weights "$test" --test "$test_words" --embedding_path "$train" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes "$proc" --distance "$method" --model "contextual" --workspace $workspace --name "${name}" -save --accuracy "accuracy@1";
+          python interpretability_cli.py --test_weights "$test" --test "$test_words" --embedding_path "$train" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes "$proc" --distance "$method" --model "contextual" --workspace $workspace --name "${name}" -load --accuracy "accuracy@1" -accuracy_preprocessed -accuracy_recalculate;
           done
         done
       done
@@ -116,7 +116,7 @@ for complexity in ${complexities[*]}
             name="sensebert-${complexity}-uncased_layer-${layer}_dense_${method}"
           fi
           i=$((i+1));
-          python interpretability_cli.py --test_weights "$test" --test "$test_words" --embedding_path "$train" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes "$proc" --distance "$method" --model "contextual" --workspace $workspace --name "${name}" -save --accuracy "accuracy@1";
+          python interpretability_cli.py --test_weights "$test" --test "$test_words" --embedding_path "$train" -dense -numpy --lines_to_read -1 --smc_loader='semcor' --smc_path "$semcor" --processes "$proc" --distance "$method" --model "contextual" --workspace $workspace --name "${name}" -load --accuracy "accuracy@1" -accuracy_preprocessed -accuracy_recalculate;
           done
         done
     done
