@@ -43,6 +43,13 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
         scaled = StandardScaler(copy=True, with_mean=True, with_std=True).fit_transform(config.data.test_word_weights)
     else:
         scaled = config.data.test_word_weights
+
+    if weight is None:
+        transformed_space = scaled.dot(sign_corrected)
+    else:
+        transformed_space = scaled.dot(sign_corrected) * weight
+
+    if not preprocessed:
         semcat = config.semantic_categories.categories
 
         freq = np.zeros(semcat.i2c.__len__())
@@ -52,12 +59,7 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
                 freq[id] = freq[id] + 1
 
         freq_normed = freq / np.linalg.norm(freq, 2)
-        scaled = scaled + scaled * freq_normed
-
-    if weight is None:
-        transformed_space = scaled.dot(sign_corrected)
-    else:
-        transformed_space = scaled.dot(sign_corrected) * weight
+        transformed_space = transformed_space + transformed_space * freq_normed
 
     config.logger.info("Transformed space calculated!")
 
