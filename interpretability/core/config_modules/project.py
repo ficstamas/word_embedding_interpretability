@@ -74,8 +74,9 @@ class Project:
             logging.info(f"Project directory created at: {self.project}")
         except FileExistsError:
             logging.info(f"A project exists at: {self.project}")
-            if self.overwrite and self._save:
-                logging.info(f"Every file is going to be overwritten in this directory!")
+            if self.overwrite or not self._save:
+                if self._save:
+                    logging.info(f"Every file is going to be overwritten in this directory!")
             else:
                 logging.info(f"You used flag to prevent the project to be overwritten, so we are terminating now...")
                 quit(0)
