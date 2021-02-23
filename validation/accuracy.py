@@ -137,13 +137,13 @@ def accuracy_matrix_calculation(transformed_space, eval_vector_labels, config, o
         if eval_vector_labels[offset+i] == '<unknown>':
             continue
         if test_weights is None and eval_vector_labels[offset+i] != '<unknown>':
-            sw = transformed_space[offset+i, :]
+            sw = transformed_space[i, :]
             test_weights = sw[np.newaxis, :]
             test_labels.append(semcor.c2i[eval_vector_labels[offset+i]])
             j += 1
         else:
             if eval_vector_labels[offset+i] != '<unknown>':
-                test_weights = np.concatenate([test_weights, transformed_space[np.newaxis, offset+i, :]], axis=0)
+                test_weights = np.concatenate([test_weights, transformed_space[np.newaxis, i, :]], axis=0)
                 test_labels.append(semcor.c2i[eval_vector_labels[offset+i]])
                 j += 1
 
