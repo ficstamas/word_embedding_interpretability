@@ -93,15 +93,15 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
         argmax_matrix = arrs['values']
         all_results["ALL"] = [test_labels, argmax_matrix]
 
-        for dataset in all_results:
-            params = {
-                "test_labels": all_results[dataset][0],
-                "argmax_matrix": all_results[dataset][1],
-                "relaxation": relaxation,
-                "config": config,
-                "dataset": dataset
-            }
-            accuracy_score(**params)
+    for dataset in all_results:
+        params = {
+            "test_labels": all_results[dataset][0],
+            "argmax_matrix": all_results[dataset][1],
+            "relaxation": relaxation,
+            "config": config,
+            "dataset": dataset
+        }
+        accuracy_score(**params)
 
 
 def accuracy_score(test_labels, argmax_matrix, relaxation, config, dataset):
