@@ -26,7 +26,7 @@ class SemcorReader:
                         sense_to_id[s][1] += 1
         return id_to_gold, sense_to_id
 
-    def get_tokens(self, in_file):
+    def get_tokens(self, in_file, evaldata=False):
         etalons, _ = self.get_labels(in_file.replace('data.xml', 'gold.key.txt'))
         root = ET.parse(in_file).getroot()
         for s in root.findall('text/sentence'):
@@ -43,10 +43,10 @@ class SemcorReader:
                         synset_labels.append(synset.name())
                         lexname_labels.append(synset.lexname())
                 lemma = '{}.{}'.format(token.attrib['lemma'], pos_tag_wn)
-                yield synset_labels, lexname_labels, token_id, lemma, token.text.replace('-', '_')
+                yield synset_labels, lexname_labels, token_id, lemma, token.text.replace('-', '_'), s.attrib["id"].split('.')[0] if evaldata else None
 
 
-def read(path: str, config: Config) -> (Semcor, list, list):
+def read(path: str, config: Config) -> (Semcor, list, list, dict):
     """
     Loading SemCor
     :param path:
@@ -70,22 +70,21 @@ def read(path: str, config: Config) -> (Semcor, list, list):
                     vocab[lexname] = set()
                     vocab[lexname].add(data[4])
         word_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
-        # if word_vector_indexes[id] == 'adj.ppl':
-        #     word_vector_indexes[id] = '<unknown>'
         word_vector_tokens[id] = data[1]
         id += 1
 
+    # separates the concatenated semeval datasets
+    border = {}
+
     id = 0
     # Loading eval data
-    for data in SemcorReader().get_tokens(config.semantic_categories.test_words_path):
+    for data in SemcorReader().get_tokens(config.semantic_categories.test_words_path, evaldata=True):
         if data[1].__len__() != 0:
             for lexname in set(data[1]):
                 lexname: str
-                # if lexname != 'adj.ppl':
                 eval_data[lexname].add(data[4])
         eval_vector_indexes[id] = list(set(data[1]))[0] if data[1].__len__() != 0 else '<unknown>'
-        # if eval_vector_indexes[id] == 'adj.ppl':
-        #     eval_vector_indexes[id] = '<unknown>'
+        border[data[-1]] = id
         id += 1
 
     id = 0
@@ -96,7 +95,7 @@ def read(path: str, config: Config) -> (Semcor, list, list):
     # index to category
     i2c = {v: k for k, v in c2i.items()}
     config.logger.info(f"Semcor is loaded!")
-    return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes, eval_vector_indexes
+    return Semcor(vocab, c2i, i2c, eval_data, word_vector_tokens), word_vector_indexes, eval_vector_indexes, border
 
 
 def read_with_path(train_path: str, test_path: str) -> (Semcor, list, list):

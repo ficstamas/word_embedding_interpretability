@@ -138,6 +138,7 @@ if __name__ == '__main__':
     semcat = None
     eval_vector_labels = None
     word_vector_labels = None
+    border = None
     if config.semantic_categories.load_method == "semcat":
         semcat = semcat_reader(config)
     elif config.semantic_categories.load_method == "old_semcat":
@@ -149,7 +150,7 @@ if __name__ == '__main__':
         }
         semcat = old_semcat_reader(config.semantic_categories.path, config, embedding, params)
     elif config.semantic_categories.load_method == "semcor":
-        semcat, word_vector_labels, eval_vector_labels = semcor_reader(config.semantic_categories.path, config)
+        semcat, word_vector_labels, eval_vector_labels, border = semcor_reader(config.semantic_categories.path, config)
         config.embedding.embedding._allocate_labels(word_vector_labels)
     else:
         config.logger.error("Invalid reader type for semantic categories")
@@ -192,7 +193,8 @@ if __name__ == '__main__':
             accuracy.accuracy(eval_vector_labels, relaxation=relax, weight=weight,
                               preprocessed=args.accuracy_preprocessed,
                               wt=None if word_vector_labels is None else word_vector_labels,
-                              recalculate=args.accuracy_recalculate)
+                              recalculate=args.accuracy_recalculate,
+                              border=border)
 
     with open(os.path.join(config.project.project, "params.config"), mode="w", encoding="utf8") as f:
         json.dump(config.__repr__(), f, indent=4)
