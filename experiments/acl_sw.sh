@@ -13,7 +13,7 @@ lambdas=("0.05" "0.1" "0.2")
 models=("bert" "sensebert")
 methods=("hellinger_normal")
 sm=("semcor" "ALL")
-whitenings=("zca" "zca_cor")
+whitenings=("zca")
 
 cd ../;
 

@@ -76,7 +76,7 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
             upper_bound = border[dataset]
             in_data = transformed_space[prev_end:upper_bound+1, :]
             test_labels, argmax_matrix = accuracy_matrix_calculation(in_data,eval_vector_labels, config, prev_end, dataset)
-            prev_end = upper_bound
+            prev_end = upper_bound + 1
             all_results[dataset] = [test_labels, argmax_matrix]
         test_labels, argmax_matrix = accuracy_matrix_calculation(transformed_space, eval_vector_labels, config, 0, "ALL")
         all_results["ALL"] = [test_labels, argmax_matrix]
