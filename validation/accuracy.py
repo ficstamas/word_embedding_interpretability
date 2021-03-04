@@ -78,6 +78,26 @@ def accuracy(eval_vector_labels: dict, config=None, relaxation=1, weight=None, p
             test_labels, argmax_matrix = accuracy_matrix_calculation(in_data,eval_vector_labels, config, prev_end, dataset)
             prev_end = upper_bound + 1
             all_results[dataset] = [test_labels, argmax_matrix]
+        cut_ranges = [0]
+        prev_end = 0
+        for dataset in border:
+            if dataset != "semeval2007":
+                prev_end = border[dataset]+1
+            elif dataset == "semeval2007":
+                cut_ranges.append(prev_end)
+                cut_ranges.append(border[dataset]+1)
+        cut_ranges.append(prev_end+1)
+        a, b = transformed_space[cut_ranges[0]:cut_ranges[1], :], transformed_space[cut_ranges[2]:cut_ranges[3], :]
+        test = np.concatenate([a,b])
+        test_eval_vector_labels = {}
+        i = 0
+        for key in eval_vector_labels:
+            if cut_ranges[1] <= key < cut_ranges[2]:
+                continue
+            test_eval_vector_labels[i] = eval_vector_labels[key]
+            i += 1
+        test_labels, argmax_matrix = accuracy_matrix_calculation(test, test_eval_vector_labels, config, 0, "ALL-dev")
+        all_results["ALL-dev"] = [test_labels, argmax_matrix]
         test_labels, argmax_matrix = accuracy_matrix_calculation(transformed_space, eval_vector_labels, config, 0, "ALL")
         all_results["ALL"] = [test_labels, argmax_matrix]
     else:
