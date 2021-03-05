@@ -98,6 +98,10 @@ class Distance:
         matrix = np.ndarray(shape=info["shape"], dtype=info["dtype"], buffer=memory.buf)
         np.save(os.path.join(path, "model/distance_matrix.npy"), matrix)
 
+    def free(self):
+        for mem in self._memory_list:
+            mem.unlink()
+
     @staticmethod
     def set(memory_info: dict, i: int, j: int, value: tuple):
         info = memory_info
@@ -105,7 +109,6 @@ class Distance:
         matrix = np.ndarray(shape=info["shape"], dtype=info["dtype"], buffer=memory.buf)
         matrix[i, j, 0] = value[0]
         matrix[i, j, 1] = value[1]
-
 
     @staticmethod
     def _progress_bar(queue: Queue, total):

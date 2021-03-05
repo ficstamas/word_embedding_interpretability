@@ -1,9 +1,11 @@
 import numpy as np
 from src.modules.utilities.labels import Labels
 from src.modules.utilities.logging import Logger
+import os
+import json
 
 
-def test(embedding: np.ndarray, labels: Labels):
+def test(embedding: np.ndarray, labels: Labels, **kwargs):
     log = Logger().logger
 
     log.info("Calculating Accuracy...")
@@ -36,4 +38,10 @@ def test(embedding: np.ndarray, labels: Labels):
     for key in unique_datasets:
         results[key] = np.mean(unique_datasets[key])
         log.info(f"{key}: {results[key]}")
+
+    if kwargs['save']:
+        out_path = os.path.join(kwargs["path"], "results/argmax.json")
+        with open(out_path, mode="w") as f:
+            json.dump(results, f, indent=4)
+        log.info(f"Results are dumped at: {out_path}")
     return results

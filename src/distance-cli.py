@@ -6,7 +6,8 @@ from src.modules.load.numpy import Embedding
 from src.modules.load.semcor import lexname_as_label
 import sys
 from src.modules.multiprocessing.distance_matrix import Distance
-
+import numpy as np
+import os
 
 LABEL_PROCESSORS = {
     "semcor-lexname": lexname_as_label
@@ -64,6 +65,8 @@ if __name__ == '__main__':
                                     args.distance, distance_params, train_labels, embeddings)
         distance_process.run(args.jobs)
         distance_process.save(args.path)
+        distance_process.free()
+        np.save(os.path.join(args.path, "model/label_frequency.npy"), train_labels.label_frequency())
         # breakpoint()
     except Exception:
         # Handling and logging unexpected Exceptions
