@@ -16,7 +16,7 @@ LABEL_PROCESSORS = {
 if __name__ == '__main__':
     freeze_support()  # for Windows support
     # Processing Arguments
-    parser = ArgumentParser(description='Interpretable Embedding Generation for ')
+    parser = ArgumentParser(description='Calculates Distance matrix.')
 
     # Embedding
     parser.add_argument("--train", type=str, required=True,
@@ -36,6 +36,12 @@ if __name__ == '__main__':
                         choices=['bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal',
                                  'bhattacharyya_exponential', 'hellinger_exponential'],
                         help="Applied distance.")
+    parser.add_argument("--kde_kernel", type=str, required=False, default='gaussian',
+                        choices=['gaussian', 'tophat', 'epanechnikov', 'exponential', 'linear', 'cosine'],
+                        help="The kernel for kernel density estimation. Only applied when using the distances with "
+                             "their continuous form (Default: gaussian)")
+    parser.add_argument("--kde_bandwidth", type=float, required=False, default=0.2,
+                        help="The bandwidth for kernel density estimation. (Default: 0.2)")
     # Jobs
     parser.add_argument("--jobs", type=int, default=2,
                         help="Number of jobs.")
@@ -47,11 +53,15 @@ if __name__ == '__main__':
     logger_object.setup(args.path)
     embeddings = Embedding()
 
+    distance_params = {
+        'kernel': args.kde_kernel,
+        'bandwidth': args.kde_bandwidth
+    }
     try:
         embeddings.load(args.train)
         train_labels, test_labels = LABEL_PROCESSORS[args.label_processor](args.train_labels)
         distance_process = Distance((embeddings.memory_info["train"]["shape"][1], len(train_labels.l2i), 2),
-                                    args.distance, train_labels, embeddings)
+                                    args.distance, distance_params, train_labels, embeddings)
         distance_process.run(args.jobs)
         distance_process.save(args.path)
         # breakpoint()

@@ -109,21 +109,8 @@ def continuous_hellinger_distance(p: np.ndarray, q: np.ndarray, **kwargs) -> Tup
     mean1 = np.mean(p)
     mean2 = np.mean(q)
 
-    # modification begin
-    # if np.std(q) == 0 and np.mean(q) == 0 and np.std(p) == 0 and np.mean(p) == 0:
-    #     return 0, 1
-    # if np.std(q) == 0 and np.mean(q) == 0:
-    #     return 1, -1 if mean1 < 0 else 1
-    #
-    # if np.std(p) == 0 and np.mean(p) == 0:
-    #     return 0, 1
-    #
-    # p = p[p != 0]
-    # q = q[q != 0]
-    # # modification end
-
-    p_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
-    q_kde = KernelDensity(bandwidth=config.kde.bandwidth, kernel=config.kde.kernel)
+    p_kde = KernelDensity(bandwidth=kwargs['bandwidth'], kernel=kwargs['kernel'])
+    q_kde = KernelDensity(bandwidth=kwargs['bandwidth'], kernel=kwargs['kernel'])
     _p = p[:, np.newaxis]
     p_kde_fit = p_kde.fit(_p)
 

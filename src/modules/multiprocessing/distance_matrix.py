@@ -13,7 +13,7 @@ import os
 
 
 class Distance:
-    def __init__(self, shape: tuple, distance: str, labels: Labels, embedding: Embedding):
+    def __init__(self, shape: tuple, distance: str, distance_params: dict, labels: Labels, embedding: Embedding):
         # Progress and Task Queues
         self._progress_manager = Manager()
         self._task_manager = Manager()
@@ -24,6 +24,7 @@ class Distance:
                 self.task_queue.put((i, j))
 
         # params
+        self.distance_params = distance_params
         self.labels = labels
         self.embedding = embedding
         self.distance = distance
@@ -48,7 +49,7 @@ class Distance:
         _jobs = min(jobs, cpu_count())
         # preparing params for multiprocessing jobs
         params = [[self.task_queue, self.progress_queue, self.labels, self.embedding,
-                   self.distance, self.memory_info] for _ in range(_jobs)]
+                   self.distance, self.memory_info, self.distance_params] for _ in range(_jobs)]
 
         # progress bar
         progress = Process(target=self._progress_bar, args=(self.progress_queue, self.task_queue.qsize()))
@@ -60,7 +61,7 @@ class Distance:
 
     @staticmethod
     def _process(task_queue: Queue, progress_queue: Queue, labels: Labels, embedding: Embedding, distance: str,
-                 distance_matrix: dict):
+                 distance_matrix: dict, distance_params: dict):
         while True:
             try:
                 task = task_queue.get(True, 0.5)
@@ -81,7 +82,7 @@ class Distance:
             # Populate Q with out of category word weights
             _q = dimension[~word_indexes]
             # calculating distance
-            distance_value, sign = DISTANCE_MAP[distance](_p, _q)
+            distance_value, sign = DISTANCE_MAP[distance](_p, _q, **distance_params)
             Distance.set(distance_matrix, i, j, (distance_value, sign))
             progress_queue.put(0)
 
