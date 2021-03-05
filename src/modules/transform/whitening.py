@@ -4,11 +4,15 @@ from .transform import Transform
 
 
 class Whiten(Transform):
+    def __init__(self):
+        super(Whiten, self).__init__()
+        self.required_coeff = True
+
     def fit(self, X: np.ndarray, **kwargs):
         return self._whiten(X, **kwargs)
 
     def apply(self, X: np.ndarray, **kwargs):
-        pass
+        return X @ self.coeff_
 
     def _whiten(self, X: np.ndarray, **kwargs):
         """

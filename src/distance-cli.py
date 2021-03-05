@@ -58,6 +58,7 @@ if __name__ == '__main__':
         'kernel': args.kde_kernel,
         'bandwidth': args.kde_bandwidth
     }
+    # TODO apply transformations
     try:
         embeddings.load(args.train)
         train_labels, test_labels = LABEL_PROCESSORS[args.label_processor](args.train_labels)

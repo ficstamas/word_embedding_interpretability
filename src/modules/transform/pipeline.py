@@ -38,6 +38,17 @@ class Pipeline:
             log.debug(f"Fitting transformation {transform['name']}...")
             XX = transform["obj"].fit(XX, **transform["params"])
 
+    def apply(self, X: np.ndarray, path: str):
+        log = Logger().logger
+        XX = X
+        for transform in self._interpreted_list:
+            log.debug(f"Reapplying transformation {transform['name']}...")
+            if transform["obj"].required_coeff:
+                constructed_path = os.path.join(path, f"transforms/{transform['name']}.npy")
+                log.debug(f"Transformation matrix loaded from: {constructed_path}")
+                transform["obj"].coeff_ = np.load(constructed_path)
+            XX = transform["obj"].apply(XX, **transform["params"])
+
     def save(self, path: str):
         log = Logger().logger
         # Empty the directory first

@@ -38,6 +38,7 @@ if __name__ == '__main__':
     logger_object.setup(args.path)
     embeddings = Embedding()
 
+    # TODO apply transformations
     try:
         embeddings.load(args.train, keep_in_memory=True)
         pipeline = Pipeline(args.configuration)
