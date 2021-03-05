@@ -71,3 +71,20 @@ def lexname_as_label(train_labels_path: str, test_labels_path=None) -> [Labels, 
 
     test = Labels(labels, dataset)
     return train, test
+
+
+def lexname_as_label_eval(test_labels_path: str) -> Labels:
+    log = Logger().logger
+
+    if not os.path.exists(test_labels_path):
+        raise FileNotFoundError(f"File not found at {test_labels_path}")
+    log.info(f"Loading test labels: {test_labels_path}")
+
+    labels = []
+    dataset = []
+    for token in SemcorReader().get_tokens(test_labels_path):
+        labels.append(token[1])
+        dataset.append(token[-1])
+
+    test = Labels(labels, dataset)
+    return test
