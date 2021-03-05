@@ -1,0 +1,14 @@
+{
+  "0": {
+    "name": "center",
+    "params": {
+      "axis": 1
+    }
+  },
+  "10": {
+    "name": "whiten",
+    "params": {
+      "method": "zca"
+    }
+  }
+}
