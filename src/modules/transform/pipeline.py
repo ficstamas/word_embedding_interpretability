@@ -48,6 +48,7 @@ class Pipeline:
                 log.debug(f"Transformation matrix loaded from: {constructed_path}")
                 transform["obj"].coeff_ = np.load(constructed_path)
             XX = transform["obj"].apply(XX, **transform["params"])
+        return XX
 
     def save(self, path: str):
         log = Logger().logger
@@ -64,7 +65,7 @@ class Pipeline:
                 out_path = os.path.join(path, f"transforms/{transform['name']}.npy")
                 log.debug(f"Saving transformation to {out_path}")
                 np.save(out_path, transform["obj"].coeff_)
-        out_path = os.path.join(path, f"transforms/{os.path.basename(self._config_path)}")
+        out_path = os.path.join(path, f"transforms/config.json")
         log.debug(f"Copying configuration file to {out_path}")
         with open(out_path, mode="w") as f:
-            json.dump(self._steps, f)
+            json.dump(self._steps, f, indent=4)

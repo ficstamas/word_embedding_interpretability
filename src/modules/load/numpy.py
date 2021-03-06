@@ -4,6 +4,7 @@ import os
 from src.modules.utilities.logging import Logger
 from src.modules.utilities.memory import construct_shared_memory_name
 from multiprocessing.shared_memory import SharedMemory
+from src.modules.transform.pipeline import Pipeline
 import copy
 
 
@@ -11,7 +12,8 @@ class Embedding:
     """
     Handles the loading of embedding spaces from Numpy arrays
     """
-    def __init__(self):
+    def __init__(self, path: str):
+        self.path = path
         self._memory_list = []
         self.memory_info = {"train": {"name": None, "size": None, "shape": (), "dtype": None},
                             "test": {"name": None, "size": None, "shape": (), "dtype": None}}
@@ -20,60 +22,79 @@ class Embedding:
         self.train = None
         self.test = None
 
-    def load(self, train_path: str, test_path=None, keep_in_memory=False):
+    def load(self, train_path: str, test_path: str, keep_in_memory=False, transform=True):
         """
         Loads embedding spaces
         :param train_path: Path to embedding space which represents the train set
         :param test_path: Path to embedding space which represents the test set
         :param keep_in_memory: If False then the representations are moved to the SharedMemory, otherwise it can
         be found in `self.train` or `self.test`
+        :param transform: Whether to apply the transformation from `<project_path>/transforms/` folder
+        :return:
+        """
+        self.load_train(train_path, keep_in_memory, transform)
+        self.load_test(test_path, keep_in_memory, transform)
+
+    def load_train(self, train_path: str, keep_in_memory=False, transform=True):
+        """
+        Loads Train set only
+        :param train_path: Path to embedding space which represents the train set
+        :param keep_in_memory: If False then the representations are moved to the SharedMemory, otherwise it can
+        be found in `self.train` or `self.test`
+        :param transform: Whether to apply the transformation from `<project_path>/transforms/` folder
         :return:
         """
         if not os.path.exists(train_path):
             raise FileNotFoundError(f"Path not exists: {train_path}")
-        if test_path is not None and not os.path.exists(test_path):
-            raise FileNotFoundError(f"Path not exists: {test_path}")
-        T, E = None, None
         if train_path.endswith(".npy"):
             T = np.load(train_path)
         elif train_path.endswith(".npz"):
             T = load_npz(train_path).toarray()
         else:
             raise FileExistsError("Unsupported file format!")
+
+        log = Logger().logger
+        config_path = os.path.join(self.path, "transforms/config.json")
+        if transform and os.path.exists(config_path):
+            pl = Pipeline(config_path)
+            T = pl.apply(T, self.path)
+        else:
+            log.info(f"No transformation was applied on the embedding. (config_found: {os.path.exists(config_path)},"
+                     f" transformation_requested: {transform})")
+
         if not keep_in_memory:
             self._allocate_memory(T, "train")
             del T
         else:
             self.train = T
 
-        if test_path is None:
-            return
-        if test_path.endswith(".npy"):
-            E = np.load(test_path)
-        elif test_path.endswith(".npz"):
-            E = load_npz(test_path).toarray()
-        else:
-            raise FileExistsError("Unsupported file format!")
-        if not keep_in_memory:
-            self._allocate_memory(E, "test")
-            del E
-        else:
-            self.test = E
-
-    def load_test(self, test_path: str, keep_in_memory=False):
+    def load_test(self, test_path: str, keep_in_memory=False, transform=True):
         """
         Loads Test set only
         :param test_path: Path to embedding space which represents the train set
         :param keep_in_memory: If False then the representations are moved to the SharedMemory, otherwise it can
         be found in `self.train` or `self.test`
+        :param transform: Whether to apply the transformation from `<project_path>/transforms/` folder
         :return:
         """
+        if not os.path.exists(test_path):
+            raise FileNotFoundError(f"Path not exists: {test_path}")
         if test_path.endswith(".npy"):
             E = np.load(test_path)
         elif test_path.endswith(".npz"):
             E = load_npz(test_path).toarray()
         else:
             raise FileExistsError("Unsupported file format!")
+
+        log = Logger().logger
+        config_path = os.path.join(self.path, "transforms/config.json")
+        if transform and os.path.exists(config_path):
+            pl = Pipeline(config_path)
+            E = pl.apply(E, self.path)
+        else:
+            log.info(f"No transformation was applied on the embedding. (config_found: {os.path.exists(config_path)},"
+                     f" transformation_requested: {transform})")
+
         if not keep_in_memory:
             self._allocate_memory(E, "test")
             del E

@@ -9,7 +9,7 @@ class Centering(Transform):
         return self._centring(X, **kwargs)
 
     def apply(self, X: np.ndarray, **kwargs):
-        self.fit(X, **kwargs)
+        return self.fit(X, **kwargs)
 
     @staticmethod
     def _centring(X: np.ndarray, **kwargs):
@@ -27,7 +27,7 @@ class Normalize(Transform):
         return self._normalize(X, **kwargs)
 
     def apply(self, X: np.ndarray, **kwargs):
-        self.fit(X, **kwargs)
+        return self.fit(X, **kwargs)
 
     @staticmethod
     def _normalize(X: np.ndarray, **kwargs):
@@ -45,7 +45,7 @@ class Standardize(Transform):
         return self._standardize(X, **kwargs)
 
     def apply(self, X: np.ndarray, **kwargs):
-        self.fit(X, **kwargs)
+        return self.fit(X, **kwargs)
 
     @staticmethod
     def _standardize(X: np.ndarray, **kwargs):

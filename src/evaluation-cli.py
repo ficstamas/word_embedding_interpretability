@@ -24,6 +24,8 @@ if __name__ == '__main__':
     parser.add_argument("--test", type=str, required=True,
                         help="Path to the embedding space which serves as the train set. (It can be a .npy for dense "
                              "and .npz for sparse representations)")
+    parser.add_argument("--no_transform", action="store_false", default=True,
+                        help="Do not apply preprocessing transformations on the embedding space.")
     # Labels
     parser.add_argument("--test_labels", type=str, required=True,
                         help="Path to labels for train set.")
@@ -42,19 +44,18 @@ if __name__ == '__main__':
     parser.add_argument("--evaluation_method", type=str, default="argmax", choices=['argmax'],
                         help="Evaluation method")
 
-
     args = parser.parse_args()
 
     init_filesystem(args.path, ("logs", "results", "model", "transforms"))
     logger_object = Logger()
     logger_object.setup(args.path)
-    embeddings = Embedding()
+    embeddings = Embedding(args.path)
     weights = {
         "label_frequency": args.label_frequency
     }
 
     try:
-        embeddings.load_test(args.test, keep_in_memory=True)
+        embeddings.load_test(args.test, keep_in_memory=True, transform=args.no_transform)
         test_labels = LABEL_PROCESSORS[args.label_processor](args.test_labels)
         transformed_space = distance_matrix.apply_transformation(embeddings.test, args.path)
         if weights["label_frequency"]:

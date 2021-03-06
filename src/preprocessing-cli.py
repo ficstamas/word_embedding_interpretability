@@ -36,11 +36,10 @@ if __name__ == '__main__':
     init_filesystem(args.path, ("logs", "results", "model", "transforms"))
     logger_object = Logger()
     logger_object.setup(args.path)
-    embeddings = Embedding()
+    embeddings = Embedding(args.path)
 
-    # TODO apply transformations
     try:
-        embeddings.load(args.train, keep_in_memory=True)
+        embeddings.load_train(args.train, keep_in_memory=True, transform=False)
         pipeline = Pipeline(args.configuration)
         pipeline.fit(embeddings.train)
         pipeline.save(args.path)

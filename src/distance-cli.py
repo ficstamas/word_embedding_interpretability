@@ -23,6 +23,8 @@ if __name__ == '__main__':
     parser.add_argument("--train", type=str, required=True,
                         help="Path to the embedding space which serves as the train set. (It can be a .npy for dense "
                              "and .npz for sparse representations)")
+    parser.add_argument("--no_transform", action="store_false", default=True,
+                        help="Do not apply preprocessing transformations on the embedding space.")
     # Labels
     parser.add_argument("--train_labels", type=str, required=True,
                         help="Path to labels for train set.")
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     init_filesystem(args.path, ("logs", "results", "model", "transforms"))
     logger_object = Logger()
     logger_object.setup(args.path)
-    embeddings = Embedding()
+    embeddings = Embedding(args.path)
 
     distance_params = {
         'kernel': args.kde_kernel,
@@ -60,7 +62,7 @@ if __name__ == '__main__':
     }
     # TODO apply transformations
     try:
-        embeddings.load(args.train)
+        embeddings.load_train(args.train, transform=args.no_transform)
         train_labels, test_labels = LABEL_PROCESSORS[args.label_processor](args.train_labels)
         distance_process = Distance((embeddings.memory_info["train"]["shape"][1], len(train_labels.l2i), 2),
                                     args.distance, distance_params, train_labels, embeddings)

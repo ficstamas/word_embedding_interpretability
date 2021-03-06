@@ -12,6 +12,8 @@ class Whiten(Transform):
         return self._whiten(X, **kwargs)
 
     def apply(self, X: np.ndarray, **kwargs):
+        log = Logger().logger
+        log.info(f"Whitening Embedding Space")
         return X @ self.coeff_
 
     def _whiten(self, X: np.ndarray, **kwargs):
