@@ -1,9 +1,23 @@
 import numpy as np
 import json
 import os
-from . import TRANSFORM_MAP
+from . import *
 from src.modules.utilities.logging import Logger
 from collections import OrderedDict
+import platform
+
+
+TRANSFORM_MAP = {
+    "std": Standardize,
+    "norm": Normalize,
+    "center": Centering,
+    "whiten": Whiten,
+}
+
+# Safety check because spams package is not available on Windows
+if platform.system() != 'Windows':
+    from .sparse import SparseCoding
+    TRANSFORM_MAP["sparse"] = SparseCoding
 
 
 class Pipeline:
