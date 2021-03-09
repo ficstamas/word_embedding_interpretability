@@ -26,16 +26,22 @@ class SparseCoding(Transform):
             raise KeyError(f"Config should include `K` and `lda` params.")
         self.log.info(f"Generating sparse embedding with K={params['K']} basis and "
                       f"lda={params['lambda1']} regularization. (normalization={normalize})")
+        lasso_params = {
+            x: params[x] for x in
+            ['L', 'lambda1', 'lambda2', 'mode', 'pos', 'ols', 'numThreads', 'length_path', 'verbose'] if x in params
+        }
         embedding = X
         if normalize:
             embedding = self.row_normalize(embedding)
         embedding = embedding.T
         if not np.isfortran(embedding):
             embedding = np.asfortranarray(embedding)
+
         self.log.info("Calculating Dictionary Matrix...")
         self.coeff_ = spams.trainDL(embedding, **params)
+
         self.log.info("Calculating Sparse Embedding...")
-        alphas = spams.lasso(embedding, D=self.coeff_, **params)
+        alphas = spams.lasso(embedding, D=self.coeff_, **lasso_params)
         return alphas.toarray()
 
     @staticmethod
@@ -67,6 +73,11 @@ class SparseCoding(Transform):
         except KeyError:
             raise KeyError(f"Config should include `K` and `lda` params.")
 
+        lasso_params = {
+            x: params[x] for x in
+            ['L', 'lambda1', 'lambda2', 'mode', 'pos', 'ols', 'numThreads', 'length_path', 'verbose'] if x in params
+        }
+        
         self.log.info(f"Generating sparse embedding from existing Dictionary matrix with K={params['K']} basis and "
                       f"lda={params['lambda1']} regularization. (normalization={normalize})")
         D = self.coeff_
@@ -79,5 +90,5 @@ class SparseCoding(Transform):
         embedding = embedding.T
 
         self.log.info("Calculating Sparse Embedding...")
-        alphas = spams.lasso(embedding, D=D, **params)
+        alphas = spams.lasso(embedding, D=D, **lasso_params)
         return alphas.toarray()
