@@ -77,7 +77,7 @@ class SparseCoding(Transform):
             x: params[x] for x in
             ['L', 'lambda1', 'lambda2', 'mode', 'pos', 'ols', 'numThreads', 'length_path', 'verbose'] if x in params
         }
-        
+
         self.log.info(f"Generating sparse embedding from existing Dictionary matrix with K={params['K']} basis and "
                       f"lda={params['lambda1']} regularization. (normalization={normalize})")
         D = self.coeff_

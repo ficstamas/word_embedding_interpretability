@@ -5,6 +5,7 @@ import os
 from src.modules.utilities.logging import Logger
 
 
+# TODO figure out why reading labels is slow (maybe attach tqdm to follow the loading progress)
 class SemcorReader:
     @staticmethod
     def get_labels(key_file):

@@ -10,6 +10,7 @@ from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import cpu_count, Pool, Process
 import copy
 import os
+from src.modules.utilities.logging import Logger
 
 
 class Distance:
@@ -29,6 +30,7 @@ class Distance:
         self.embedding = embedding
         self.distance = distance
         self._memory_list = []
+        self.log = Logger().logger
 
         # shared memory
         memory_name = construct_shared_memory_name("distance")
@@ -47,17 +49,21 @@ class Distance:
 
     def run(self, jobs=2):
         _jobs = min(jobs, cpu_count())
+        self.log.info(f"Setting up multiprocessing task with {_jobs} jobs.")
         # preparing params for multiprocessing jobs
         params = [[self.task_queue, self.progress_queue, self.labels, self.embedding,
                    self.distance, self.memory_info, self.distance_params] for _ in range(_jobs)]
 
         # progress bar
+        self.log.debug("Starting Multiprocessing Progress Bar")
         progress = Process(target=self._progress_bar, args=(self.progress_queue, self.task_queue.qsize()))
         progress.start()
+        self.log.info("Starting Jobs...")
         with Pool(_jobs) as pool:
             pool.starmap(self._process, params)
 
         progress.join()
+        self.log.debug("Joining Multiprocessing Progress Bar")
 
     @staticmethod
     def _process(task_queue: Queue, progress_queue: Queue, labels: Labels, embedding: Embedding, distance: str,
