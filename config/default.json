@@ -10,5 +10,14 @@
     "params": {
       "method": "zca"
     }
+  },
+  "20": {
+    "name": "sparse",
+    "params": {
+      "K": 1500,
+      "lda": 0.1,
+      "normalize": true,
+      "verbose": true
+    }
   }
 }

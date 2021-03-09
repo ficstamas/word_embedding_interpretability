@@ -17,7 +17,7 @@ class SparseCoding(Transform):
                 'K': kwargs['K'],
                 'lambda1': kwargs['lda'],
                 'numThreads': kwargs['numThreads'] if 'numThreads' in kwargs else 8,
-                'batchsize': kwargs['batchSize'] if 'batchSize' in kwargs else 400,
+                'batchsize': kwargs['batchSize'] if 'batchSize' in kwargs else 512,
                 'iter': kwargs['iter'] if 'iter' in kwargs else 1000,
                 'verbose': kwargs['verbose'] if 'verbose' in kwargs else False,
                 'posAlpha': kwargs['posAlpha'] if 'posAlpha' in kwargs else True
@@ -32,9 +32,10 @@ class SparseCoding(Transform):
         embedding = embedding.T
         if not np.isfortran(embedding):
             embedding = np.asfortranarray(embedding)
-
+        self.log.info("Calculating Dictionary Matrix...")
         self.coeff_ = spams.trainDL(embedding, **params)
-        alphas = spams.lasso(X, D=self.coeff_, **params)
+        self.log.info("Calculating Sparse Embedding...")
+        alphas = spams.lasso(embedding, D=self.coeff_, **params)
         return alphas.toarray()
 
     @staticmethod
@@ -77,5 +78,6 @@ class SparseCoding(Transform):
             embedding = self.row_normalize(embedding)
         embedding = embedding.T
 
+        self.log.info("Calculating Sparse Embedding...")
         alphas = spams.lasso(embedding, D=D, **params)
         return alphas.toarray()

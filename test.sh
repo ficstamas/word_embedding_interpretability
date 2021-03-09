@@ -8,6 +8,6 @@ test="/data/berend/representations_unreduced/sensebert-large-uncased/ALL.data.xm
 workspace="/data/ficstamas/test/"
 config="/home/ficstamas/word_embedding_interpretability_dev/config/default.json"
 
-python src/preprocessing-cli.py --train "$train" --path "$workspace" --configuration "$config"
-python src/distance-cli.py --train "$train" --train_labels "$semcor" --label_processor "semcor-lexname" --path "$workspace" --distance "hellinger_normal" --jobs "30"
-python src/evaluation-cli.py --test "$test" --test_labels "$all" --label_processor "semcor-lexname" --path "$workspace" --evaluation_method "argmax" -label_frequency
+python -m src.preprocessing-cli --train "$train" --path "$workspace" --configuration "$config"
+python -m src.distance-cli --train "$train" --train_labels "$semcor" --label_processor "semcor-lexname" --path "$workspace" --distance "hellinger_normal" --jobs "30"
+python -m src.evaluation-cli --test "$test" --test_labels "$all" --label_processor "semcor-lexname" --path "$workspace" --evaluation_method "argmax" -label_frequency
