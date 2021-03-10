@@ -118,12 +118,11 @@ class Distance:
 
     @staticmethod
     def _progress_bar(queue: Queue, total):
-        progress = tqdm.tqdm(total=total, unit='coeff', desc=f'Progress\t')
+        progress = tqdm.tqdm(total=total, unit='coeff', desc=f'[DistanceMatrix]Progress\t:')
         while True:
             try:
                 _ = queue.get(True, 0.5)
-                progress.n += 1
-                progress.update(0)
+                progress.update()
                 if progress.n == total:
                     break
             except Empty:

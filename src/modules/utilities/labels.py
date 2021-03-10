@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 
 class Labels:
@@ -8,6 +9,14 @@ class Labels:
         self.l2i = {}
         self._index_dict()
         self.i2l = {self.l2i[x]: x for x in self.l2i}
+        self._n_bytes = sys.getsizeof(self.labels)+sys.getsizeof(self.dataset)+\
+                        sys.getsizeof(self.l2i)+sys.getsizeof(self.i2l)
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __repr__(self):
+        return f"<Labels len='{self.__len__()}', n_bytes={self._n_bytes}>"
 
     def _index_dict(self):
         i = 0

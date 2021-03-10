@@ -1,7 +1,7 @@
 import logging
 import os
 from .metaclasses import Singleton
-
+import tqdm
 
 class Logger(metaclass=Singleton):
     def __init__(self):
@@ -25,8 +25,27 @@ class Logger(metaclass=Singleton):
         stream_handler.setLevel(logging.INFO)
         stream_handler.setFormatter(stream_formatter)
 
+        tqdm_handler = TqdmLoggingHandler(logging.INFO)
+        tqdm_handler.setLevel(logging.INFO)
+
         self.logger.addHandler(file_handler)
         self.logger.addHandler(stream_handler)
         self.logger.addHandler(error_file_handler)
+        # self.logger.addHandler(tqdm_handler)
         self.logger.setLevel(logging.DEBUG)
         self.logger.info("Logging Handlers are initiated!")
+
+
+class TqdmLoggingHandler(logging.Handler):
+    def __init__(self, level=logging.NOTSET):
+        super().__init__(level)
+
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            tqdm.tqdm.write(msg)
+            self.flush()
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
