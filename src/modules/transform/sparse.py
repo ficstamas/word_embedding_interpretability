@@ -42,7 +42,7 @@ class SparseCoding(Transform):
 
         self.log.info("Calculating Sparse Embedding...")
         alphas = spams.lasso(embedding, D=self.coeff_, **lasso_params)
-        return alphas.toarray()
+        return alphas.toarray().T
 
     @staticmethod
     def row_normalize(embeddings):
@@ -63,7 +63,7 @@ class SparseCoding(Transform):
                 'K': kwargs['K'],
                 'lambda1': kwargs['lda'],
                 'numThreads': kwargs['numThreads'] if 'numThreads' in kwargs else 8,
-                'batchsize': kwargs['batchSize'] if 'batchSize' in kwargs else 400,
+                'batchsize': kwargs['batchSize'] if 'batchSize' in kwargs else 512,
                 'iter': kwargs['iter'] if 'iter' in kwargs else 1000,
                 'verbose': kwargs['verbose'] if 'verbose' in kwargs else False,
                 'posAlpha': kwargs['posAlpha'] if 'posAlpha' in kwargs else True,
@@ -91,4 +91,4 @@ class SparseCoding(Transform):
 
         self.log.info("Calculating Sparse Embedding...")
         alphas = spams.lasso(embedding, D=D, **lasso_params)
-        return alphas.toarray()
+        return alphas.toarray().T

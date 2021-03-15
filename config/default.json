@@ -14,10 +14,11 @@
   "20": {
     "name": "sparse",
     "params": {
-      "K": 1500,
-      "lda": 0.1,
+      "K": 3000,
+      "lda": 0.05,
       "normalize": true,
-      "verbose": true
+      "verbose": false,
+      "batchSize": 512
     }
   }
 }
