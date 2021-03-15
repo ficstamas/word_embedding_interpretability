@@ -72,6 +72,14 @@ class SemcorReader:
         self._pbar = None
 
 
+def get_lexname_lookup_table():
+    lexnames = set([x.lexname() for x in wn.all_synsets()])
+    l2i = {}
+    for i, v in enumerate(sorted(list(lexnames))):
+        l2i[v] = i
+    return l2i
+
+
 def lexname_as_label(train_labels_path: str, test_labels_path=None) -> [Labels, Labels]:
     log = Logger().logger
 
@@ -86,6 +94,7 @@ def lexname_as_label(train_labels_path: str, test_labels_path=None) -> [Labels, 
         dataset.append(token[-1])
 
     train = Labels(labels, dataset)
+    train.overwrite_lookup(get_lexname_lookup_table())
 
     if test_labels_path is None:
         return train, None
@@ -101,6 +110,7 @@ def lexname_as_label(train_labels_path: str, test_labels_path=None) -> [Labels, 
         dataset.append(token[-1])
 
     test = Labels(labels, dataset)
+    test.overwrite_lookup(get_lexname_lookup_table())
     return train, test
 
 
@@ -118,4 +128,5 @@ def lexname_as_label_eval(test_labels_path: str) -> Labels:
         dataset.append(token[-1])
 
     test = Labels(labels, dataset)
+    test.overwrite_lookup(get_lexname_lookup_table())
     return test

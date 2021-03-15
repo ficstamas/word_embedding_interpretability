@@ -22,6 +22,7 @@ def test(embedding: np.ndarray, labels: Labels, **kwargs):
 
     unique_datasets["ALL"] = []
 
+    prediction: np.ndarray
     prediction = np.argmax(embedding, axis=1)[np.array(labeled_filter)]
     log.debug(f"Prediction Object: type {type(prediction)};")
     log.debug(f"Prediction Object: shape {prediction.shape};")
