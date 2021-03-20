@@ -21,6 +21,12 @@
       "batchSize": 512
     }
   },
+  "25": {
+    "name": "center",
+    "params": {
+      "axis": 1
+    }
+  },
   "30": {
     "name": "whiten",
     "params": {

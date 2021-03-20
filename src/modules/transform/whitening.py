@@ -33,9 +33,10 @@ class Whiten(Transform):
             log.info("No whitening method was provided, defaulting to ZCA")
 
         log.info(f"Whitening Embedding Space with {method}")
-        X = X.reshape((-1, np.prod(X.shape[1:])))
-        X_centered = X - np.mean(X, axis=0)
-        Sigma = np.dot(X_centered.T, X_centered) / X_centered.shape[0]
+        # Assuming the embedding space is already centered
+        # X = X.reshape((-1, np.prod(X.shape[1:])))
+        # X_centered = X - np.mean(X, axis=0)
+        Sigma = np.dot(X.T, X) / X.shape[0]
         W = None
 
         if method in ['zca', 'pca', 'cholesky']:
