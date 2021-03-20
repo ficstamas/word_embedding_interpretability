@@ -61,7 +61,7 @@ if __name__ == '__main__':
         if weights["label_frequency"]:
             normed_freq = np.load(os.path.join(args.path, "model/label_frequency.npy"))
             normed_freq = normed_freq / np.linalg.norm(normed_freq, 2)
-            transformed_space = transformed_space * normed_freq
+            transformed_space = transformed_space + transformed_space * normed_freq
         if args.save:
             np.save(os.path.join(args.path, "model/evaluation_space.npy"), transformed_space)
         params = {

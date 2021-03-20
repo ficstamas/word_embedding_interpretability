@@ -88,6 +88,8 @@ class SparseCoding(Transform):
         if normalize:
             embedding = self.row_normalize(embedding)
         embedding = embedding.T
+        if not np.isfortran(embedding):
+            embedding = np.asfortranarray(embedding)
 
         self.log.info("Calculating Sparse Embedding...")
         alphas = spams.lasso(embedding, D=D, **lasso_params)

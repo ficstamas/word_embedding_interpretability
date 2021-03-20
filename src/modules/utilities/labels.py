@@ -10,8 +10,7 @@ class Labels:
         self._index_dict()
         self.i2l = {}
         self._inverse_lookup()
-        self._n_bytes = sys.getsizeof(self.labels)+sys.getsizeof(self.dataset)+\
-                        sys.getsizeof(self.l2i)+sys.getsizeof(self.i2l)
+        self._n_bytes = self.n_bytes()
 
     def __len__(self):
         return len(self.labels)
@@ -25,6 +24,13 @@ class Labels:
     def overwrite_lookup(self, l2i):
         self.l2i = l2i
         self._inverse_lookup()
+        self._n_bytes = self.n_bytes()
+
+    def n_bytes(self):
+        val = sys.getsizeof(self.labels)+sys.getsizeof(self.dataset)+\
+              sys.getsizeof(self.l2i)+sys.getsizeof(self.i2l)
+        self._n_bytes = val
+        return val
 
     def _index_dict(self):
         i = 0

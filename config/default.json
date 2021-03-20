@@ -10,15 +10,5 @@
     "params": {
       "method": "zca"
     }
-  },
-  "20": {
-    "name": "sparse",
-    "params": {
-      "K": 3000,
-      "lda": 0.05,
-      "normalize": true,
-      "verbose": false,
-      "batchSize": 512
-    }
   }
 }
