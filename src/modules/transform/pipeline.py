@@ -31,7 +31,11 @@ class Pipeline:
         with open(config_path, mode="r") as f:
             self._steps = json.load(f)
         log.debug(f"Size of Pipeline {len(self._steps)}")
-
+        try:
+            self._steps = {int(x): self._steps[x] for x in self._steps}
+        except ValueError:
+            log.exception("Provide `int` for each step as priority in the config.json.")
+            exit(1)
         # Ordering pipeline
         self._steps = OrderedDict(sorted(self._steps.items()))
 
