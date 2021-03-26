@@ -11,6 +11,7 @@ from multiprocessing import cpu_count, Pool, Process
 import os
 from src.modules.utilities.logging import Logger
 import scipy.sparse as sp
+import itertools
 
 
 class Distance:
@@ -79,6 +80,10 @@ class Distance:
         self.log.debug("Joining Multiprocessing Progress Bar")
 
     @staticmethod
+    def selection_map(token: list):
+        return token[0] in token[1]
+
+    @staticmethod
     def _process(task_queue: Queue, progress_queue: Queue, labels: Labels, embedding: Embedding, distance: str,
                  distance_matrix: dict, distance_params: dict):
         while True:
@@ -89,13 +94,16 @@ class Distance:
             i = task[0]  # dimension index
             j = task[1]  # category index
             dimension = embedding.get_dimension("train", i)
-            word_indexes = np.zeros(shape=[dimension.shape[0], ], dtype=np.bool)
+            # Generating Semantic Category mask
+            word_indexes = itertools.starmap(Distance.selection_map, zip(labels.i2l[j], labels.labels))
+            word_indexes = np.array(word_indexes, dtype=np.bool)
+            # word_indexes = np.zeros(shape=[dimension.shape[0], ], dtype=np.bool)
             # One-hot selection vector for in-category words
-            for k, label in enumerate(labels.labels):
-                if label.__len__() == 0:
-                    continue
-                if labels.i2l[j] in label:
-                    word_indexes[k] = True
+            # for k, label in enumerate(labels.labels):
+            #     if label.__len__() == 0:
+            #         continue
+            #     if labels.i2l[j] in label:
+            #         word_indexes[k] = True
             # Populate P with category word weights
             _p = dimension[word_indexes]
             if type(_p) is sp.csc.csc_matrix:
