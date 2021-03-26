@@ -1,7 +1,13 @@
-from src.modules.load.semcor import lexname_as_label
-from src.modules.utilities.logging import Logger
+import itertools
 
-Logger().setup("workspace/")
+a = 'alma'
 
-x = lexname_as_label("data/semcor/semcor.data.xml")
-print(x)
+b = [['alma'], [], ['körte', 'alma']]
+
+
+def comp(t1, t2):
+    return t1 in t2
+
+
+l = [x for x in itertools.starmap(comp, zip(itertools.repeat(a), b))]
+print(l)

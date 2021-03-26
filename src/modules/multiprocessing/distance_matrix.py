@@ -80,12 +80,13 @@ class Distance:
         self.log.debug("Joining Multiprocessing Progress Bar")
 
     @staticmethod
-    def selection_map(token: list):
-        return token[0] in token[1]
+    def selection_map(fltr, label):
+        return fltr in label
 
     @staticmethod
     def _process(task_queue: Queue, progress_queue: Queue, labels: Labels, embedding: Embedding, distance: str,
                  distance_matrix: dict, distance_params: dict):
+        category_index_cache = {}
         while True:
             try:
                 task = task_queue.get(True, 0.5)
@@ -95,15 +96,13 @@ class Distance:
             j = task[1]  # category index
             dimension = embedding.get_dimension("train", i)
             # Generating Semantic Category mask
-            word_indexes = itertools.starmap(Distance.selection_map, zip(labels.i2l[j], labels.labels))
-            word_indexes = np.array(word_indexes, dtype=np.bool)
-            # word_indexes = np.zeros(shape=[dimension.shape[0], ], dtype=np.bool)
-            # One-hot selection vector for in-category words
-            # for k, label in enumerate(labels.labels):
-            #     if label.__len__() == 0:
-            #         continue
-            #     if labels.i2l[j] in label:
-            #         word_indexes[k] = True
+            if j not in category_index_cache:
+                word_indexes = list(itertools.starmap(Distance.selection_map, zip(itertools.repeat(labels.i2l[j]), labels.labels)))
+                word_indexes = np.array(word_indexes, dtype=np.bool)
+                category_index_cache[j] = np.where(word_indexes)
+            else:
+                word_indexes = np.zeros(dimension.shape[0], dtype=np.bool)
+                word_indexes[category_index_cache[j]] = True
             # Populate P with category word weights
             _p = dimension[word_indexes]
             if type(_p) is sp.csc.csc_matrix:

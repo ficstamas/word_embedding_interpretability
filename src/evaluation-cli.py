@@ -6,9 +6,9 @@ from src.modules.load.semcor import lexname_as_label_eval
 import sys
 from src.modules.transform import distance_matrix
 from src.modules.evaluation import EVALUATION_MAP
-import json
 import os
 import numpy as np
+import scipy.sparse as sp
 
 
 LABEL_PROCESSORS = {
@@ -57,6 +57,8 @@ if __name__ == '__main__':
     try:
         embeddings.load_test(args.test, keep_in_memory=True, transform=args.no_transform)
         test_labels = LABEL_PROCESSORS[args.label_processor](args.test_labels)
+        if type(embeddings.test) is sp.csc.csc_matrix:
+            embeddings.test = embeddings.test.toarray()
         transformed_space = distance_matrix.apply_transformation(embeddings.test, args.path)
         if weights["label_frequency"]:
             normed_freq = np.load(os.path.join(args.path, "model/label_frequency.npy"))
