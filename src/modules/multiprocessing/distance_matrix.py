@@ -8,13 +8,21 @@ from src.modules.utilities.memory import construct_shared_memory_name
 import numpy as np
 from multiprocessing.shared_memory import SharedMemory
 from multiprocessing import cpu_count, Pool, Process
-import copy
 import os
 from src.modules.utilities.logging import Logger
+import scipy.sparse as sp
 
 
 class Distance:
     def __init__(self, shape: tuple, distance: str, distance_params: dict, labels: Labels, embedding: Embedding):
+        """
+        Handles multiprocessing to calculate the Distance Matrix
+        :param shape: Shape of Distance Matrix
+        :param distance: Distance to use
+        :param distance_params: Parameters for distance function
+        :param labels: Labels object
+        :param embedding: Embedding object
+        """
         # Progress and Task Queues
         self._progress_manager = Manager()
         self._task_manager = Manager()
@@ -48,6 +56,11 @@ class Distance:
         self._memory_list.append(memory)
 
     def run(self, jobs=2):
+        """
+        Initiate process
+        :param jobs: Number of processes to spawn/fork
+        :return:
+        """
         _jobs = min(jobs, cpu_count())
         self.log.info(f"Setting up multiprocessing task with {_jobs} jobs.")
         # preparing params for multiprocessing jobs
@@ -85,31 +98,50 @@ class Distance:
                     word_indexes[k] = True
             # Populate P with category word weights
             _p = dimension[word_indexes]
+            if type(_p) is sp.csc.csc_matrix:
+                _p = np.reshape(_p.toarray(), (_p.shape[0]))  # np.reshape(_p, (157))
             # Populate Q with out of category word weights
             _q = dimension[~word_indexes]
+            if type(_q) is sp.csc.csc_matrix:
+                _q = np.reshape(_q.toarray(), (_q.shape[0]))
             # calculating distance
-            distance_value, sign = DISTANCE_MAP[distance](_p, _q, **distance_params)
+            if _p.shape[0] == 0:  # if for some reason there is no annotated entry
+                distance_value, sign = 0, 1
+            else:
+                distance_value, sign = DISTANCE_MAP[distance](_p, _q, **distance_params)
             Distance.set(distance_matrix, i, j, (distance_value, sign))
             progress_queue.put(0)
 
-    def get(self):
-        info = self.memory_info
-        memory = SharedMemory(info["name"])
-        matrix = np.ndarray(shape=info["shape"], dtype=info["dtype"], buffer=memory.buf)
-        return copy.copy(matrix)
-
     def save(self, path: str):
+        """
+        Saves the distance matrix
+        :param path: Path
+        :return:
+        """
         info = self.memory_info
         memory = SharedMemory(info["name"])
         matrix = np.ndarray(shape=info["shape"], dtype=info["dtype"], buffer=memory.buf)
         np.save(os.path.join(path, "model/distance_matrix.npy"), matrix)
 
     def free(self):
+        """
+        Free allocated memory spaces
+        :return:
+        """
         for mem in self._memory_list:
             mem.unlink()
 
     @staticmethod
     def set(memory_info: dict, i: int, j: int, value: tuple):
+        """
+        Set an entry of distance matrix
+        :param memory_info: Dict which contains information about the Distance Matrix Shared Memory object
+                            Required keys: name, dtype, shape
+        :param i: Dimension
+        :param j: Semantic Category
+        :param value: Values in (value, sign) format
+        :return:
+        """
         info = memory_info
         memory = SharedMemory(info["name"])
         matrix = np.ndarray(shape=info["shape"], dtype=info["dtype"], buffer=memory.buf)
@@ -118,6 +150,12 @@ class Distance:
 
     @staticmethod
     def _progress_bar(queue: Queue, total):
+        """
+        Process which handles the progress bar
+        :param queue: Queue object
+        :param total: size of the progress bar
+        :return:
+        """
         progress = tqdm.tqdm(total=total, unit='coeff', desc=f'[DistanceMatrix]Progress\t:')
         while True:
             try:
