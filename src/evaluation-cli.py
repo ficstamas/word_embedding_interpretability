@@ -43,6 +43,8 @@ if __name__ == '__main__':
     # Evaluation method
     parser.add_argument("--evaluation_method", type=str, default="argmax", choices=['argmax'],
                         help="Evaluation method")
+    # Development set name
+    parser.add_argument("--devset_name", type=str, default=None)
 
     args = parser.parse_args()
 
@@ -68,7 +70,8 @@ if __name__ == '__main__':
             np.save(os.path.join(args.path, "model/evaluation_space.npy"), transformed_space)
         params = {
             "save": True,
-            "path": args.path
+            "path": args.path,
+            "devset": args.devset_name
         }
         results = EVALUATION_MAP[args.evaluation_method](transformed_space, test_labels, **params)
     except Exception:

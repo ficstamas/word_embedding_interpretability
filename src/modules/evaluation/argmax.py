@@ -21,6 +21,8 @@ def test(embedding: np.ndarray, labels: Labels, **kwargs):
             labeled_filter.append(i)
 
     unique_datasets["ALL"] = []
+    if kwargs['devset'] is not None:
+        unique_datasets["ALL-dev"] = []
 
     prediction: np.ndarray
     prediction = np.argmax(embedding, axis=1)[np.array(labeled_filter)]
@@ -31,9 +33,13 @@ def test(embedding: np.ndarray, labels: Labels, **kwargs):
         if labels.i2l[prediction[i]] in etalon[i]:
             unique_datasets[dataset[i]].append(1)
             unique_datasets["ALL"].append(1)
+            if kwargs['devset'] is not None and dataset[i] != kwargs['devset']:
+                unique_datasets["ALL-dev"].append(1)
         else:
             unique_datasets[dataset[i]].append(0)
             unique_datasets["ALL"].append(0)
+            if kwargs['devset'] is not None and dataset[i] != kwargs['devset']:
+                unique_datasets["ALL-dev"].append(0)
     log.info("Results: ")
     results = {}
     for key in unique_datasets:
