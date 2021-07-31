@@ -56,12 +56,14 @@ class Embedding:
         :param transform: Whether to apply the transformation from `<project_path>/transforms/` folder
         :return:
         """
+        sparse = False
         if not os.path.exists(train_path):
             raise FileNotFoundError(f"Path not exists: {train_path}")
         if train_path.endswith(".npy"):
             T = np.load(train_path)
         elif train_path.endswith(".npz"):
             T = load_npz(train_path).tocsc()
+            sparse = True
         else:
             raise FileExistsError("Unsupported file format!")
 
@@ -69,7 +71,7 @@ class Embedding:
         config_path = os.path.join(self.path, "transforms/config.json")
         if transform and os.path.exists(config_path):
             pl = Pipeline(config_path)
-            T = pl.apply(T.toarray(), self.path)
+            T = pl.apply(T.toarray() if sparse else T, self.path)
         else:
             log.info(f"No transformation was applied on the embedding. (config_found: {os.path.exists(config_path)},"
                      f" transformation_requested: {transform})")
@@ -83,7 +85,7 @@ class Embedding:
                 raise TypeError(f"Encountered unsupported matrix format: {type(T)}")
             del T
         else:
-            self.train = T
+            self.train = T.toarray() if sparse else T
 
     def load_test(self, test_path: str, keep_in_memory=False, transform=True):
         """
@@ -94,12 +96,14 @@ class Embedding:
         :param transform: Whether to apply the transformation from `<project_path>/transforms/` folder
         :return:
         """
+        sparse = False
         if not os.path.exists(test_path):
             raise FileNotFoundError(f"Path not exists: {test_path}")
         if test_path.endswith(".npy"):
             E = np.load(test_path)
         elif test_path.endswith(".npz"):
             E = load_npz(test_path).tocsc()
+            sparse = True
         else:
             raise FileExistsError("Unsupported file format!")
 
@@ -107,7 +111,7 @@ class Embedding:
         config_path = os.path.join(self.path, "transforms/config.json")
         if transform and os.path.exists(config_path):
             pl = Pipeline(config_path)
-            E = pl.apply(E.toarray(), self.path)
+            E = pl.apply(E.toarray() if sparse else E, self.path)
         else:
             log.info(f"No transformation was applied on the embedding. (config_found: {os.path.exists(config_path)},"
                      f" transformation_requested: {transform})")
@@ -121,7 +125,7 @@ class Embedding:
                 raise TypeError(f"Encountered unsupported matrix format: {type(T)}")
             del E
         else:
-            self.test = E
+            self.test = E.toarray() if sparse else E
 
     def _allocate_memory(self, matrix: np.ndarray, name: str):
         """

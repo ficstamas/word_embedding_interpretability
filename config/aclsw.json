@@ -1,0 +1,21 @@
+{
+  "0": {
+    "name": "center",
+    "params": {
+      "axis": 1
+    }
+  },
+  "5": {
+    "name": "norm",
+    "params": {
+      "axis": 1,
+      "ord": 2
+    }
+  },
+  "10": {
+    "name": "whiten",
+    "params": {
+      "method": "zca"
+    }
+  }
+}

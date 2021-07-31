@@ -115,6 +115,7 @@ class Distance:
             if _p.shape[0] == 0:  # if for some reason there is no annotated entry
                 distance_value, sign = 0, 1
             else:
+                _p, _q = _p[~np.isnan(_p)], _q[~np.isnan(_q)]  # removing NaNs
                 distance_value, sign = DISTANCE_MAP[distance](_p, _q, **distance_params)
             Distance.set(distance_matrix, i, j, (distance_value, sign))
             progress_queue.put(0)

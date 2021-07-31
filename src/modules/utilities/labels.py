@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from functools import lru_cache
 
 
 class Labels:
@@ -50,3 +51,33 @@ class Labels:
                 as_id = self.l2i[l]
                 freq[as_id] = freq[as_id] + 1
         return freq
+
+    @lru_cache(maxsize=1)
+    def as_id_list(self):
+        id_list = []
+        for labels in self.labels:
+            id_list.append([])
+            for label in labels:
+                id_list[-1].append(self.l2i[label])
+        return id_list
+
+    @lru_cache(maxsize=1)
+    def get_labels_with_ov(self):
+        id_list = []
+        for labels in self.labels:
+            id_list.append([])
+            if len(labels) == 0:
+                id_list[-1].append("none")
+            for label in labels:
+                id_list[-1].append(label)
+        return id_list
+
+    @lru_cache(maxsize=1)
+    def get_multiclass_representation(self):
+        id_list = []
+        for labels in self.labels:
+            if len(labels) > 0:
+                id_list.append(labels[0])
+            else:
+                id_list.append('ov')
+        return id_list

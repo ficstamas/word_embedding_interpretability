@@ -12,6 +12,7 @@ Provides a tool to generate interpretable word vectors, from existing embedding 
 - [Reproduction](#reproducing-the-results-from-the-papers)
   - [TSD](#tsd)
   - [MSZNY](#mszny2021-conference-on-hungarian-computational-linguistics)
+  - [ACL-IJCNLP 2021 Student Workshop](#acl-ijcnlp-2021-student-workshop)
 - [Citation](#citation)
 
 
@@ -22,91 +23,52 @@ Python 3.8+
 Every dependency can be found in the [requirements.txt](requirements.txt) file.<br>
 `pip install -r requirements.txt`
 
+If you wish to use the sparse method from preprocessing you need to install [SPAMS](http://spams-devel.gforge.inria.fr) 
+separately.
+
 # Usage
 
-```
-interpretability_cli.py [-h] --embedding_path <EMBEDDING_PATH> 
-                               [-dense]
-                               [-numpy] 
-                               [--lines_to_read LINES_TO_READ]
-                               [--smc_path SMC_PATH] 
-                               [--smc_loader SMC_LOADER]
-                               [--smc_method SMC_METHOD] 
-                               [--smc_rate SMC_RATE]
-                               [--seed SEED] 
-                               [--kde_kernel KDE_KERNEL]
-                               [--kde_bandwidth KDE_BANDWIDTH] 
-                               [--distance DISTANCE]
-                               [--distance_weight {none,relative_frequency}]
-                               [--workspace WORKSPACE] 
-                               [--name NAME]
-                               [--processes PROCESSES] 
-                               [--model MODEL] 
-                               [-load]
-                               [-save] 
-                               [-overwrite]
-                               [-interpretability]
-                               [--accuracy ACCURACY] 
-                               [--relaxation RELAXATION]
-                               [--test TEST] 
-                               [--test_weights TEST_WEIGHTS]
-                               [--mcmc_acceptance MCMC_ACCEPTANCE]
-                               [--mcmc_noise MCMC_NOISE]
-```
-
-#### General Parameters
-- **seed** - Random seed used through the whole runtime
-- **processes** - The maximum number of processes utilized (It's capped to the number of available physical cores if more than that is provided)
-- **save** - Save the model
-- **load** - Load a saved model
-- **overwrite** - Whether to overwrite existing projects (If not used and a project exists at the given path then the program terminates with exit code 0)
-- **workspace** - A workspace is created at the provided path (**Required**)
-- **name** - Name of the experiment (Creates a folder with the provided name in the workspace folder)
-- **model** - Model used for interpretable embedding calculation
-  - _default_ - Used for static embeddings
-  - _contextual_ - Used for contextual embeddings
-  - _mcmc_ - Markov chain Monte Carlo simulation based method
-
-#### Source Embedding Related Parameters
-- **embedding_path** - Path to the input embedding (**Required**)
-- **dense** - Use if the input is a dense embedding
-- **numpy** - Use if the input is a numpy object (_.npy_,_.npz_)
-- **lines_to_read** - Number of lines (or vectors) to read from the embedding
-
-#### Semantic Category Related Parameters
-- **smc_path** - Path to the semantic categories
-- **smc_loader** - Loader defines the format of semantic categories in the file system
-- **smc_method** - Method to drop words from semantic categories
-- **smc_rate** - The percentage of words to drop
-
-#### Model Specific Parameters
-##### Contextual Embedding specific
-- **test** - Path to the test words. 
-- **test_weights** - Path to NumPy array which contains the weights for the test words.
-##### MCMC Model specific
-- **mcmc_acceptance** - The minimum number of accepted estimation during Metropolis–Hastings algorithm
-- **mcmc_noise** - The percentage of noise applied to every semantic category.
-
-#### Distance Related Parameters
-- **distance** - The utilized distance
-  - _hellinger_ - Continuous form of Hellinger distance, relies on Kernel Density Estimation
-  - _bhattacharyya_ - Continuous form of Bhattacharyya distance, relies on Kernel Density Estimation
-  - _hellinger_normal_ - Closed form of Hellinger distance which assumes Normal distribution
-  - _bhattacharyya_normal_ - Closed form of Bhattacharyya distance which assumes Normal distribution
-  - _hellinger_exponential_ - Closed form of Hellinger distance which assumes Exponential distribution
-  - _bhattacharyya_exponential_ - Closed form of Bhattacharyya distance which assumes Exponential distribution
-- **distance_weight** - Provides a weight to calculated distances
-  - _none_ - Don't use any (constant 1 multiplier)
-  - _relative_frequency_ - Relative frequency of category words
-- **kde_kernel** - Applied kernel for Kernel Density Estimation (for available kernels [see](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KernelDensity.html#sklearn.neighbors.KernelDensity))
-- **kde_bandwidth** - Bandwidth of the kernel
-
-#### Validation Related Parameters
-- **interpretability** - Calculates the interpretability score
-- **relaxation** - Relaxation parameter for the interpretability score
-- **accuracy** - Accuracy calculation method
-  - _word_retrieval_test_ - Word Retrieval Test
-  - _accuracy_ - Can use additional relaxation parameter after an @ symbol e.g.: accuracy@10 (Only available for contextual models atm.)
+The code base is separated into 3 modules.
+- [Preprocessing](src/preprocessing-cli.py) (optional, you can do your preprocessing steps separately)
+  - **train** - Path to the embedding space (for training)
+  - **path** - Path to a project folder (later you have to set the same folder for the calculations)
+  - **configuration** - Path to a configuration JSON file (e.g. [this](config/example.json))
+    - It builds up like this:```{
+  "<priority>": {
+    "name": "<name>",
+    "params": {
+      ...
+    }
+}, ...```
+    - _priority_ modifies the execution order
+    - _method_ can be:
+      - With same parameters as in numpy: _std_, _norm_, _center_
+      - _whiten_
+        - parameters - method: 'zca', 'pca', 'cholesky', 'zca_cor', 'pca_cor'
+      - _sparse_ (only on systems where [SPAMS](http://spams-devel.gforge.inria.fr) is supported)
+        - parameters: [spams.trainDL](http://spams-devel.gforge.inria.fr/doc-python/html/doc_spams004.html#sec5) and [spams.lasso](http://spams-devel.gforge.inria.fr/doc-python/html/doc_spams005.html#sec15)
+  - **jobs** - **Deprecated**
+- [Calculation of Distance Matrix](src/distance-cli.py)
+  - **train** - Path to the embedding space (for training)
+  - **no_transform** - Flag to do not apply preprocessing step if a config exists in the project folder
+  - **train_labels** - Path to file containing labels (for SemCor `*.data.xml` file)
+  - **label_processor** - Method to load labels into memory (Right now `semcor-lexname` only)
+  - **path** - Path to project (a place to save files, or the same as provided during preprocessing)
+  - **distance** - Distance to apply (`'bhattacharyya', 'hellinger', 'bhattacharyya_normal', 'hellinger_normal',
+                                 'bhattacharyya_exponential', 'hellinger_exponential'`)
+  - **kde_kernel** - Kernel to use if `bhattacharyya` or `hellinger` was provided as distance. (`'gaussian', 'tophat', 'epanechnikov', 'exponential', 'linear', 'cosine'`)
+  - **kde_bandwidth** - Bandwidth to use for kernel density estimation 
+  - **jobs** - Number of processes to use during distance calculation (it is always `min(provided, number_of_physical_cores)`)
+- [Evaluation](src/distance-cli.py)
+  - **test** - Path to the embedding space (for evaluation)
+  - **no_transform** - Flag to do not apply preprocessing step if a config exists in the project folder
+  - **test_labels** - Path to file containing labels (for SemCor `*.data.xml` file)
+  - **label_processor** - Method to load labels into memory (Right now `semcor-lexname` only)
+  - **path** - Path to project (a place to save files, or the same as provided during preprocessing)
+  - **save** - To save the interpretable space
+  - **label_frequency** - Applying label frequency based weighting on the output embedding.
+  - **evaluation_method** - How to measure interpretability (`argmax` only)
+  - **devset_name** - Name of the devset (good if you wish to use one for parameter selection)
 
 
 # Reproducing the results from the papers
@@ -116,9 +78,9 @@ The paper which was submitted to the **23rd International Conference on Text, Sp
 
 GloVe can be downloaded from [here](http://nlp.stanford.edu/data/glove.6B.zip) and the SemCat dataset is available [here](https://github.com/avaapm/SEMCATdataset2018).
 
-Run [tsd_experiments.sh](experiments/tsd_expriments.sh) after changing the _glove_path_ and _semcat_path_ variables. Furthermore change the _proc_ variable according to your CPU cores (Default: 30), but it is not going to spawn/fork more processes than the available number of physical cores.
-
 ## MSZNY2021 (Conference on Hungarian Computational Linguistics)
+Link to the [paper](http://publicatio.bibl.u-szeged.hu/20761/).
+
 To reproduce the results from the MSZNY paper, download the following embeddings:
 
 - [Hungarian Fasttext (Wiki)](https://dl.fbaipublicfiles.com/fasttext/vectors-wiki/wiki.hu.vec)
@@ -128,16 +90,15 @@ To reproduce the results from the MSZNY paper, download the following embeddings
 
 We generated the sparse embedding spaces with the following [script](https://github.com/begab/interpretability_aaai2020/blob/master/src/sparse_coding/sparse_coding.py). Parameters can be found in [mszny_sparse.sh](experiments/mszny_sparse.sh).
 
-After changing some parameters in [mszny.sh](experiments/mszny.sh) you can run the script.
-<br>
-Parameters to change:
-- _path_ - points at the folder which contains the embeddings
-- _embeddings_ - if the name of the embeddings have changed
-- _workspace_ - to set the output path
-- _proc_ - which defines the number of utilized processes
+
+## ACL-IJCNLP 2021 Student Workshop
+
+We included the [configuration file](config/aclsw.json) for the preprocessing step. 
+We generated the sparse embeddings separately with the following [script](https://github.com/begab/interpretability_aaai2020/blob/master/src/sparse_coding/sparse_coding.py).
+
 # Citation 
 
-If you are using the code or relying on the paper please cite the following paper:
+If you are using the code or relying on the paper please cite the following paper(s):
 
 ```
 @InProceedings{10.1007/978-3-030-58323-1_21,

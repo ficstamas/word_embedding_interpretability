@@ -40,6 +40,7 @@ if __name__ == '__main__':
     # Weights
     parser.add_argument("-label_frequency", action="store_true", default=False,
                         help="Applying label frequency based weighting on the output embedding.")
+
     # Evaluation method
     parser.add_argument("--evaluation_method", type=str, default="argmax", choices=['argmax'],
                         help="Evaluation method")
