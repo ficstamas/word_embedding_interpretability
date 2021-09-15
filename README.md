@@ -93,6 +93,8 @@ We generated the sparse embedding spaces with the following [script](https://git
 
 ## ACL-IJCNLP 2021 Student Workshop
 
+Paper is available [here](docs/ACL_IJCNLP_SRW_2021_Proceedings.pdf)
+
 We included the [configuration file](config/aclsw.json) for the preprocessing step. 
 We generated the sparse embeddings separately with the following [script](https://github.com/begab/interpretability_aaai2020/blob/master/src/sparse_coding/sparse_coding.py).
 
