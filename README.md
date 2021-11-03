@@ -93,7 +93,7 @@ We generated the sparse embedding spaces with the following [script](https://git
 
 ## ACL-IJCNLP 2021 Student Workshop
 
-Paper is available [here](docs/ACL_IJCNLP_SRW_2021_Proceedings.pdf)
+Paper is available [here](https://aclanthology.org/2021.acl-srw.25/)
 
 We included the [configuration file](config/aclsw.json) for the preprocessing step. 
 We generated the sparse embeddings separately with the following [script](https://github.com/begab/interpretability_aaai2020/blob/master/src/sparse_coding/sparse_coding.py).
@@ -101,6 +101,27 @@ We generated the sparse embeddings separately with the following [script](https:
 # Citation 
 
 If you are using the code or relying on the paper please cite the following paper(s):
+
+For contextual embeddings:
+```
+@inproceedings{ficsor-berend-2021-changing,
+    title = "Changing the Basis of Contextual Representations with Explicit Semantics",
+    author = "Ficsor, Tam{\'a}s  and
+      Berend, G{\'a}bor",
+    booktitle = "Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing: Student Research Workshop",
+    month = aug,
+    year = "2021",
+    address = "Online",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2021.acl-srw.25",
+    doi = "10.18653/v1/2021.acl-srw.25",
+    pages = "235--247",
+    abstract = "The application of transformer-based contextual representations has became a de facto solution for solving complex NLP tasks. Despite their successes, such representations are arguably opaque as their latent dimensions are not directly interpretable. To alleviate this limitation of contextual representations, we devise such an algorithm where the output representation expresses human-interpretable information of each dimension. We achieve this by constructing a transformation matrix based on the semantic content of the embedding space and predefined semantic categories using Hellinger distance. We evaluate our inferred representations on supersense prediction task. Our experiments reveal that the interpretable nature of transformed contextual representations makes it possible to accurately predict the supersense category of a word by simply looking for its transformed coordinate with the largest coefficient. We quantify the effects of our proposed transformation when applied over traditional dense contextual embeddings. We additionally investigate and report consistent improvements for the integration of sparse contextual word representations into our proposed algorithm.",
+}
+
+```
+
+For static embeddings
 
 ```
 @InProceedings{10.1007/978-3-030-58323-1_21,
