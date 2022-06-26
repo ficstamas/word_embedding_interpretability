@@ -7,7 +7,7 @@ joblib==0.14.1
 kiwisolver==1.2.0
 matplotlib==3.2.1
 netCDF4==1.5.3
-nltk==3.5
+nltk==3.6.6
 numpy==1.22.0
 packaging==20.3
 pandas==1.0.3
